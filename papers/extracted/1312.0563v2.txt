@@ -1,0 +1,1264 @@
+Simulating and analyzing order book data:
+The queue-reactive model
+Weibing Huang1;2, Charles-Albert Lehalle3and Mathieu Rosenbaum1
+1LPMA, University Pierre et Marie Curie (Paris 6)
+2Kepler-Cheuvreux
+3Capital Fund Management
+September 5, 2014
+Abstract
+Through the analysis of a dataset of ultra high frequency order book updates, we introduce
+a model which accommodates the empirical properties of the full order book together with
+the stylized facts of lower frequency nancial data. To do so, we split the time interval of
+interest into periods in which a well chosen reference price, typically the midprice, remains
+constant. Within these periods, we view the limit order book as a Markov queuing system.
+Indeed, we assume that the intensities of the order ows only depend on the current state
+of the order book. We establish the limiting behavior of this model and estimate its
+parameters from market data. Then, in order to design a relevant model for the whole
+period of interest, we use a stochastic mechanism that allows to switch from one period of
+constant reference price to another. Beyond enabling to reproduce accurately the behavior
+of market data, we show that our framework can be very useful for practitioners, notably
+as a market simulator or as a tool for the transaction cost analysis of complex trading
+algorithms.
+Keywords: Limit order book, market microstructure, high frequency data, queuing model,
+jump Markov process, ergodic properties, volatility, mechanical volatility, market simulator,
+execution probability, transaction costs analysis, market impact.
+1 Introduction
+Electronic limit order books (LOB for short), where market participants send their buy and
+sell orders via a continuous-time double auction system, are nowadays the dominant mode of
+exchange on nancial markets. Consequently, understanding the LOB dynamics has become a
+fundamental issue. Indeed, a deep knowledge of the LOB's behavior enables policy makers to
+design relevant regulations, market makers to provide liquidity at cheaper prices, and investors
+to save transaction costs while mounting and unwinding their positions, thus reducing the cost
+of capital of listed companies. Furthermore, it can also provide insights on the macroscopic
+features of the price which emerges from the LOB.
+1arXiv:1312.0563v2  [q-fin.TR]  3 Sep 2014
+
+In the seminal work on zero intelligence LOB models of Smith, Farmer, Gillemot, and Krishna-
+murthy (2003), a mean-eld approach is suggested in order to study the properties of the LOB.
+In such models, the underlying assumption is that the order ows follow independent Poisson
+processes. Although this hypothesis is not really compatible with empirical observations, the
+authors show that its simplicity allows for the derivation of many interesting formulas, some of
+them being testable on market data. This work has been followed by numerous developments.
+For example, in Cont, Stoikov, and Talreja (2010), the probabilities of various order book re-
+lated events are computed in this framework, whereas stability conditions of the system are
+studied in Abergel and Jedidi (2011). We wish to extend this approach in two directions. On
+the one hand, we want our model to be more consistent with market data, so that we can give
+new insights on the dynamics of the LOB. On the other hand, we aim at providing a useful and
+relevant tool for market practitioners, notably in the perspective of transaction costs analysis.
+Under the rst in rst out rule (which we assume in the sequel), a LOB can be considered as
+a high-dimensional queuing system, where orders arrive and depart randomly. We consider the
+three following types of orders:
+Limit orders: insertion of a new order in the LOB (a buy order at a lower price than the
+best ask price, or a sell order at a higher price than the best bid price).
+Cancellation orders: cancellation of an already existing order in the LOB.
+Market orders: consumption of available liquidity (a buy or sell order at the best available
+price).
+In practice, market participants (or their algorithms) analyze many quantities before sending
+a given order at a given level. One of the most important variables in this decision process is
+probably the distance between their target price and their \reference market price", typically
+the midprice. This reference price is linked with the order ows since it is usually determined
+by the LOB state. This interconnection makes the design of LOB models quite intricate. To
+overcome this diculty, we split the time interval of interest into periods of constant reference
+price, and consider two parts in our modeling. First, we study the LOB as a Markov queuing
+system during the time periods when the reference price is constant. Then, we investigate the
+dynamics of the reference price. Such a framework is particularly suitable for large tick assets1,
+for which constant reference price periods are quite long and allow for accurate parameter es-
+timations.
+Two kinds of public information are available to market participants at the high frequency
+scale: the historical order ows and the current state of the LOB. In this paper, we are mostly
+interested in how the state of the LOB impacts market participants decisions. Surprisingly
+enough, this question has been rarely considered in the literature. Let us mention as an excep-
+tion the interesting approach in Gareche, Disdier, Kockelkoren, and Bouchaud (2013), where
+the impact of the LOB state on the queue dynamics is analyzed through PDE type arguments.
+Within periods of constant reference price, we model the LOB as a continuous-time Markov
+jump process, and estimate its innitesimal generator matrix under various assumptions on the
+1A large tick asset is dened as an asset whose bid-ask spread is almost always equal to one tick, see Dayri
+and Rosenbaum (2012). In practice, our framework can be considered relevant for any asset whose average
+spread is smaller than 2.5 ticks.
+2
+
+information set used by market participants. From these results, we are able to analyze how
+market participants react towards dierent congurations of the LOB. Furthermore, we provide
+the asymptotic distributions of the LOB. The level of realism of our approaches is assessed by
+comparing expected features from the models with empirical ones. Thus, all our developments
+are illustrated on two specic examples of large tick stocks on Euronext Paris: France Telecom
+and Alcatel-Lucent (in appendix).
+In the second part of the paper, we extend our framework by allowing reference price moves,
+so that our model also accommodates macroscopic properties of the asset (roughly summarized
+by the volatility). Modications of the reference price2will possibly occur provided one of the
+best queues is totally depleted or a new order is inserted within the spread. This model is
+called \queue-reactive model". In particular, it enables us to bring to light a quantity, the
+\maximal mechanical volatility", which represents the amount of price volatility generated by
+the generic randomness of the order ows. In practice, this parameter is typically smaller than
+the empirical volatility estimated from market data. The reason for this is simple: the market
+does not evolve like a closed physical system, where the only source of randomness would be the
+endogenous interactions between participants. It is also subject to external informations, such
+as the news, which increase the volatility of the price. Hence, it will be necessary to introduce
+an exogenous component within the queue-reactive model.
+Throughout the paper, we illustrate the fact that many useful short term predictions can be
+computed in our framework: execution probabilities of passive orders, probability of price in-
+crease. . . More importantly, we show that the queue-reactive model turns out to be a very
+relevant market simulator, notably in view of the analysis of complex trading tactics, using for
+example a mixture of market and limit orders.
+The paper is organized as follows. In Section 2, we consider periods when the reference price is
+constant. We rst present a very general framework for the LOB dynamics and then introduce
+three specic models. The rst one is a birth and death process in which the queues are
+assumed to be independent. In this setting, we are able to fully characterize the asymptotic
+behavior of the LOB. The second approach is a queuing system in which the bid and ask sides
+are independent, but the rst two lines on each side can exhibit correlations. We show that
+this model can be seen as a quasi birth and death process (QBD for short) and thus admits a
+matrix geometric solution as its invariant distribution. In the last approach, we allow for cross
+dependences between bid and ask queues. An application of these models to the computation of
+execution probabilities is presented at the end of the same section. In Section 3, we investigate
+the dynamics of the reference price. In particular, we build the queue-reactive model which is a
+relevant LOB model for the whole time period of interest. We end this section by showing how
+our framework can be used for transaction costs and market impact analysis of high frequency
+trading strategies. A conclusion and some perspectives are given in Section 4. Some proofs and
+further empirical results are gathered in an appendix.
+2Note that the reference price will not be exactly the midprice, see Section 2.2.
+3
+
+2 Dynamics of the LOB in a period of constant reference
+price
+Within time periods when the reference price is constant, we consider three dierent models for
+the LOB. These models can be jointly introduced through the general framework we present
+now.
+2.1 General Framework
+In the general framework, the LOB is seen as a 2 K-dimensional vector, where Kdenotes
+the number of available limits on each side3, see Figure 1. The reference price prefdenes
+the center of the 2 K-dimensional vector, and divides the LOB into two parts: the bid side
+[Q i:i= 1;:::;K ] and the ask side [ Qi:i= 1;:::;K ], whereQi4represents the limit at the
+distancei 0:5 ticks to the right (+ i) or to the left ( i) ofpref. The number of orders at Qi
+is denoted by qi. We assume that on the bid (resp. ask) side, market participants send buy
+(resp. sell) limit orders, cancel existing buy (resp. sell) orders and send sell (resp. buy) market
+orders. We consider a constant order size at each limit. However, the order sizes at the dierent
+limits are allowed to be dierent. In practice, these sizes can be chosen as the average event
+sizes observed at each limit Qi(AES ifor short)5.
+The 2K-dimensional process X(t) = (q K(t);:::;q 1(t);q1(t);:::;q K(t)) is then modeled as a
+continuous-time Markov jump process in the countable state space 
+ = N2K, with jump size
+equal to one. For q= (q K;:::;q 1;q1;:::;q K)2
+, andei= (a K;:::;a i;:::;a K), whereaj= 0
+forj6=iandai= 1, the components Qq;pof the innitesimal generator matrix Qof the process
+X(t) are assumed to be of the following form:
+Qq;q+ei=fi(q)
+Qq;q ei=gi(q)
+Qq;q= X
+q2
+;p6=qQq;p
+Qq;p= 0;otherwise.
+We now give a theoretical result on the ergodicity of the system under two very general as-
+sumptions. Let us denote by Pq;p(t) the transition probability from state qto statepin a time
+t. Recall that a Markov process in a countable state space is said to be ergodic if there exists
+a probability measure that satises P=(is called invariant measure) and for every q
+andp:
+lim
+t!1Pq;p(t) =p:
+We consider the two following assumptions.
+3Note that an empty limit can be part of the LOB in our setting.
+4To simplify our notations, we write i/ iasi, and i/iasi.
+5In our framework, AES iis a more suitable choice than ATS (Average Trade Size) that computes only the
+average size of market orders, see Section 5.5 in appendix for more details.
+4
+
+Figure 1: Limit order book
+Assumption 1. (Negative individual drift) There exist a positive integer Cbound and > 0,
+such that for all iand allq2
+, ifqi>C bound ,
+fi(q) gi(q)< :
+Assumption 2. (Bound on the incoming ow) There exists a positive number Hsuch that for
+anyq2
+,X
+i2[ K;:::; 1;1;:::;K ]fi(q)H:
+Assumption 1 can be interpreted as follows: the queue size of a limit tends to decrease when
+it becomes too large. Assumption 2 ensures no explosion in the system: the order arrival
+speed stays bounded for any given state of the LOB. Under these two assumptions, we have
+the following ergodicity result for the 2 K-dimensional queuing system. The proof is given in
+appendix.
+Theorem 2.1. Under Assumptions 1 and 2, the 2K-dimensional Markov jump process X(t)is
+ergodic.
+This theorem is the basis for the asymptotic study of the LOB dynamics in the following
+sections.
+2.2 Data description and estimation of the reference price
+2.2.1 The database
+The data used in our empirical studies are collected from Cheuvreux's6LOB database, from
+January 2010 to March 2012, on Euronext Paris. It records the LOB data (prices, volume and
+number of orders) up to the fth best limit on both sides, whenever the LOB state changes.
+Note that we remove market data corresponding to the rst and last hour of trading, as these
+6Cheuvreux is a brokerage rm based in Paris, formerly a subsidiary of Cr edit Agricole Corporate Investment
+Bank, and now merged with Kepler Capital Market.
+5
+
+periods have usually specic features because of the opening/closing auction phases. Two large
+tick European stocks, France Telecom and Alcatel-Lucent, are studied and they exhibit very
+similar behaviors. Some characteristics of these two stocks are given in Table 1. We have chosen
+the stock France Telecom as illustration example for all the developments in the sequel. The
+results for Alcatel-Lucent can be found in appendix. Although only stocks are considered in
+this paper, our method applies also to other nancial assets, such as interest rates or index
+futures (among which large tick assets are quite numerous, see Dayri and Rosenbaum (2012)).
+stock average number of average number of average spread size
+orders per day trades per day (in number of ticks)
+France Telecom 159250 7282 1.43
+Alcatel Lucent 129400 8626 1.99
+Table 1: Data description
+2.2.2 Estimation of the reference price
+As mentioned in the introduction, the estimation of a relevant reference price prefis the basis
+for dening the limits in the order book. Indeed, prefprovides the center point of the LOB and
+thus the positions of the 2 Klimits. In our framework, if we write pifor the price level of the
+limitQi,i= K;:::; 1;1;:::;K , we must have
+pref=p1+p 1
+2:
+When the observed bid-ask spread is equal to one tick, prefis obviously taken as the midprice
+(denoted by pmid) and both Q1andQ 1are non empty. When it is larger than one tick, several
+choices are possible for pref. We build preffrom the data the following way: when the spread
+is odd (in tick unit), it is still natural to use pmidas the LOB center:
+pref=pmid=(pbestbid +pbestask )
+2:
+When it is even, pmidis no longer appropriate since it is now itself a possible position for order
+arrivals. In such case, we use either
+pmid+tick size
+2orpmid tick size
+2;
+choosing the one which is the closest to the previous value of pref. Note that more complex
+methods could be used for the estimation of pref, see for example Delattre, Robert, and Rosen-
+baum (2013).
+2.3 Model I: Collection of independent queues
+We now give a rst simple LOB model around a xed reference price.
+6
+
+2.3.1 Description of the model
+In this model, we assume independence between the ows arriving at dierent limits in the
+LOB. Three types of orders are considered: limit orders, cancellations and market orders. We
+suppose that the intensities of these point processes at dierent limits are only functions of the
+target queue size (that is the available volume at the considered limit Qi). Furthermore, at a
+given limit, conditional on the LOB state, the arrival processes of the three types of orders are
+taken independent. The values of these intensities are denoted by L
+i(n) (limit orders), C
+i(n)
+(cancellations) and M
+i(n) (market orders) when qi=n. Moreover, the intensity functions at
+QiandQ iare chosen identical, considering the symmetry property of the LOB. We then have
+L
+i(n) =L
+ i(n);C
+i(n) =C
+ i(n);M
+i(n) =M
+ i(n), and
+fi(q) =L
+i(qi)
+gi(q) =C
+i(qi) +M
+i(qi):
+In this model, market orders sent to Qiconsume directly the volume available at Qi. Therefore,
+we can have a market order at the second limit while the rst limit is not empty. However,
+for large tick assets, this assumption is reasonable as their market order ow is almost fully
+concentrated on rst limits ( Q1) and the estimated intensities of this ow at ( Qi),i6= 1 are
+very small. Under these assumptions, the LOB becomes a collection of 2 Kindependent queues,
+each of them being a birth and death process.
+2.3.2 Empirical study: Collection of independent queues
+In Model I, the intensities of the dierent queues can be estimated separately. The value of Kis
+set to 3, as our numerical experiments show that for the considered stocks, both the dynamics
+and empirical distributions at Qi;i= 4;5 are quite similar to that at Q3. This value of K
+will also apply to other experiments in the paper.
+The estimation method goes as follows. We dene an \event" !as any modication of the
+queue size. For queue Qi, we record the waiting time  ti(!) (in number of seconds) between
+the event!and the preceding event at Qi, the type of the event Ti(!) and the queue size qi(!)
+before the event. The queue size is then approximated by the smallest integer that is larger
+than or equal to the volume available at the queue, divided by the stock's average event size
+AES iat the corresponding queue. We set the \type" of the event !the following way:
+Ti(!)2E+for limit order insertion at Qi,
+Ti(!)2E for limit order cancellation at Qi,
+Ti(!)2Etfor market order at Qi.
+When the reference price changes, we restart the recording process. Once we have collected
+(ti(!);Ti(!);qi(!)) from historical data, it is easy to estimate L
+i(n),C
+i(n) andM
+i(n) by the
+maximum likelihood method:
+7
+
+010 20 30 40 50 00.5 11.5 22.5 33.5 
+Queue Size (per average event size) Intensity (num per second) Limit order insertion intensity, Model I 
+  
+First limit 
+Second limit 
+Third limit 
+010 20 30 40 50 00.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 
+Queue Size (per average event size) Intensity (num per second) Limit order cancellation intensity, Model I 
+  
+First limit 
+Second limit 
+Third limit 
+010 20 30 40 50 -0.05 00.05 0.1 0.15 0.2 0.25 0.3 
+Queue Size (per average event size) Intensity (num per second) Market order arrival intensity, Model I 
+  
+First limit 
+Second limit 
+Third limit Figure 2: Intensities at Qi,i= 1;2;3, France Telecom
+^i(n) = 
+mean(ti(!)jqi(!) =n) 1
+^L
+i(n) = ^i(n)#fTi(!)2E+;qi(!) =ng
+#fqi(!) =ng
+^C
+i(n) = ^i(n)#fTi(!)2E ;qi(!) =ng
+#fqi(!) =ng
+^M
+i(n) = ^i(n)#fTi(!)2Et;qi(!) =ng
+#fqi(!) =ng;
+where \mean" denotes the empirical mean and # Athe cardinality of the set A.
+In Figure 2, we present the estimated intensities. Data at QiandQ iare aggregated together
+(simply by combining the two collected samples) and condence intervals (dotted lines) are
+computed using central limit approximations detailed in appendix. We now comment the
+obtained graphs.
+Behaviors under the independence assumption
+Limit order insertion:
+Q1: The intensity of the limit order insertion process is approximately a constant function
+of the queue size, with a signicantly smaller value at 0. Note that inserting a limit
+order in an empty queue creates a new best limit and the market participant placing
+this order is the only one standing at this price level. Such action is often risky.
+Indeed, when the spread is dierent from one tick, one is quite uncertain about the
+position of the so-called \ecient" or \fair" price, see for example Delattre, Robert,
+and Rosenbaum (2013) for discussions on this notion. This smaller value can also be
+due to temporary realizations of the structural relation between the bid-ask spread
+and the volatility: if the spread is large because the inventory risk of market makers
+is high, the probability that anyone inserts a limit order in the spread is likely to
+be low, see among others Madhavan, Richardson, and Roomans (1997), Avellaneda
+8
+
+and Stoikov (2008), Wyart, Bouchaud, Kockelkoren, Potters, and Vettorazzo (2008)
+and Dayri and Rosenbaum (2012) for more details about market making and the
+relation between spread, volatility and inventory risk.
+Q2: The intensity is now approximately a decreasing function of the queue size. This
+interesting result probably reveals a quite common strategy used in practice: posting
+orders at the second limit when the corresponding queue size is small to seize priority.
+More details on this strategy are given in Section 2.4.2.
+Q3: The intensity function shows similar properties to that at the second limit.
+Limit order cancellation:
+Q1: The rate of order cancellation is an increasing concave function for q1between 0 and
+25, and becomes at/slightly decreasing for larger values. This result is in contrast
+to the classical way to model this ow, where one often considers a linearly increasing
+cancellation rate, see for example Cont, Stoikov, and Talreja (2010). On this rst in
+rst out market, the priority value, that is the advantage of a limit order compared
+with another limit order standing at the rear of the same queue, can be one of the
+reasons for this behavior. Indeed, the priority value is an increasing function of the
+queue size and orders having a high priority value are less likely to be canceled.
+Q2: The rate of order cancellation attains more rapidly its asymptotic value, which is
+lower than for Q1. Compared to the rst limit case, market participants at the
+second limit have even stronger intention not to cancel their orders when the queue
+size increases. This is probably due to the fact that these orders are less exposed
+to short term market trends than those posted at Q1(since they are covered by
+the volume standing at Q1and their price level is farther away from the reference
+price).
+Q3: The priority value is smaller at the third limit since it takes longer time for Q3to
+become the best quote if it does. The rate of order cancellation increases almost
+linearly for queue sizes larger than 3 AES 3. We also nd a quite large cancellation
+rate when the queue size is equal to one, which shows that market participants cancel
+their orders more quickly when they nd themselves alone in the queue.
+Market orders:
+Q1: The rate decreases exponentially with the available volume at Q1. This phenomena
+is easily explained by market participants \rushing for liquidity" when liquidity is
+rare, and \waiting for better price" when liquidity is abundant.
+Q2: In practice, market orders can arrive at Q2only ifQ1= 0 (that is when Q2is
+the best oer queue). The shape of the intensity is very similar to the one obtained
+in the case of Q1. The values are of course much smaller.
+Q3: In some rare cases, one can still nd some market orders arriving at Q3(market
+orders occurring when the spread is large). The intensity function remains exponen-
+tially decreasing.
+9
+
+2.3.3 Asymptotic behavior under Model I
+The invariant distribution of the LOB can be computed explicitly in Model I. We denote by i
+the stationary distribution of the limit Qi, and dene the arrival/departure ratio vector iby
+i(n) =L
+i(n)
+(C
+i(n+ 1) +M
+i(n+ 1)):
+Then the following result for the invariant distribution is easily obtained, see for example Gross
+and Harris (1998):
+i(n) =i(0)nY
+j=1i(j 1)
+i(0) = 
+1 +1X
+n=1nY
+j=1i(j 1) 1:
+Hence the long term behavior of the LOB is completely determined by . This implies that two
+assets can have very dierent ow dynamics, but still the same invariant distribution provided
+that their arrival/departure ratios are the same.
+We now compare the asymptotic results of the model with the empirical distributions observed
+atQ1,Q2andQ3. To compute these empirical laws, we use a sampling frequency of 30
+seconds (every 30 seconds, we look at the LOB and record its state)7. The results are gathered
+in Figure 3, as well as the invariant distributions from a Poisson model (constant limit/market
+order arrival rate, linear cancellation rate, parameters estimated from the same dataset).
+One can see that the invariant distributions approximate very well the empirical distributions
+of the LOB. This shows that in order to explain the shape of the LOB, such mean-eld type
+approach, where the LOB prole arises from interactions between the average behaviors of
+market participants, can be very relevant.
+2.4 Model II: Dependent case
+We now present some extensions of Model I. We assume here that buy/sell market orders
+consume volume at the best quote limits, dened as the rst non empty ask/bid queue. Thus,
+we consider a buy market order process with intensity M
+buyand a sell market order process with
+intensityM
+sell. The limit order, cancellation, and market order arrival processes are assumed to
+be independent conditional on the LOB state. So we can write fi(q) andgi(q) in the following
+form:
+fi(q) =L
+i(q)
+gi(q) =C
+i(q) +M
+buy(q)1bestask (q)=i;ifi>0
+gi(q) =C
+i(q) +M
+sell(q)1bestbid (q)=i;ifi<0:
+7Other sampling frequencies have also been tested and the estimated distributions are found to be very
+similar. These sampled data will also be used to estimate the joint distributions of the LOB limits in Model IIa
+and IIb.
+10
+
+010 20 30 40 50 00.02 0.04 0.06 0.08 0.1 0.12 0.14 0.16 0.18 0.2 First limit 
+Queue Size (in AES) Distribution 
+  
+010 20 30 40 50 00.02 0.04 0.06 0.08 0.1 0.12 0.14 0.16 0.18 0.2 Second limit 
+Queue Size (in AES) Distribution 
+  
+010 20 30 40 50 00.02 0.04 0.06 0.08 0.1 0.12 0.14 0.16 0.18 0.2 Third limit 
+Queue Size (in AES) Distribution 
+  
+Empirical estimation 
+Model I 
+Poisson modelEmpirical estimation 
+Model I 
+Poisson modelEmpirical estimation 
+Model I 
+Poisson modelFigure 3: Model I, invariant distributions of q1;q2;q3, France Telecom
+As for Model I, we consider some bid-ask symmetry, that is, for q= [q 3;q 2;q 1;q1;q2;q3],q0=
+[q3;q2;q1;q 1;q 2;q 3] andi= 1;2;3,L
+i(q) =L
+ i(q0),M
+i(q) =M
+ i(q0) andM
+buy(q) =M
+sell(q0) .
+2.4.1 Model IIa: Two sets of dependent queues
+Institutional traders and brokers tend to place most of their limit orders at best limits, while
+many market makers, arbitragers and other high frequency traders stand also in queues beyond
+these best limits. This suggests for example that the dynamics at Q2may not only depend on
+q2, but also on whether or not Q1is empty. We thus propose to use the following intensity
+functions for the queue Q2: in this model, L
+2andC
+2are functions of q2and1q1>0.
+Intensities at Qi;i6=2 remain functions of qionly. For large tick assets, the probability that
+Qi;i3 is the best limit is negligible. It is thus reasonable to also assume that market orders
+are only sent to Q1andQ2. This enables us to keep the independence property between Q3
+and (Q1;Q2). Whenq1>0, the market order intensity M
+buy=sell is assumed to be a function
+ofq1; whenq1= 0, it is a function of q2only.
+2.4.2 Model IIa: Empirical study
+In this empirical study, our goal is to understand how market participants make trading de-
+cisions atQ2in two dierent situations: q1= 0 andq1>0. Since we are now studying
+a two-dimensional problem, the data recording process is slightly dierent. In particular, for
+(Q1;Q2), it goes as follows: we record the waiting times  ti(!) between events that happen at
+Q1orQ2, the type of event T(!) and the two queue sizes ( q1(!);q2(!)) before the event. The
+maximum likelihood method is again used to estimate the intensity functions L
+i,C
+i,M
+ifor
+i= 1;2. Fori= 1 andi= 3, as the dynamics at Qionly depend on the queue size at Qi,
+the estimated values of L
+1;C
+1andM
+1are very close to those obtained in Model I and are not
+shown here. The estimated intensity functions at Q2are given in Figure 4. Some comments
+are in order:
+Limit order insertion: Both curves are decreasing functions of the queue size. In the
+rst case (q1= 0), the limit order insertion intensity reaches very rapidly its asymptotic
+value. The relatively high value observed for q2= 0 is probably due to the fact that
+for large tick assets, market makers rarely allow for spreads larger than 3 ticks. In the
+11
+
+010 20 30 40 00.2 0.4 0.6 0.8 11.2 1.4 1.6 1.8 2
+Queue Size (per average event size) Intensity (num per second) Second limit, limit order insertion 
+  
+q1 == 0 
+q1 > 0 
+010 20 30 40 00.2 0.4 0.6 0.8 11.2 1.4 1.6 1.8 2
+Queue Size (per average event size) Intensity (num per second) Second limit, limit order cancellation 
+  
+q1 == 0 
+q1 > 0 
+010 20 30 40 00.01 0.02 0.03 0.04 0.05 0.06 
+Queue Size (per average event size) Intensity (num per second) Second limit, market order insertion 
+  
+q1 == 0 
+q1 > 0 Figure 4: Intensities at Q2as functions of 1 q1>0andq2, France Telecom
+second case ( q1>0), the intensity continues to go down to a much lower value. This
+is likely to be related to the arbitrage strategy introduced in Section 2.3.2: post passive
+orders at a non-best limit when its size is small, wait for this limit to eventually become
+the best limit and then gain the prot from having the priority value. For example, when
+the considered limit becomes the best one, one can decide to stay in the queue if its size
+is large enough to cover the risk of short term market trend, or to cancel the orders if the
+queue size is too small.
+Limit order cancellation: The cancellation rate is higher when q1= 0. This can be
+related to the concentration of the trading activity at best limits. When q1>0, the
+cancellation rate is quite large when q2= 1, as it is the case at Q3(see Section 2.3.2).
+Market orders: No market order can arrive at Q2when there are still limit orders at
+Q1(cross limits large market orders that consume several limits are treated as several
+market orders that arrive sequentially at those limits within a very short time period).
+The market order arrival rate when Q2is the best limit is not very dierent from that at
+Q1, but shows a rather unexpected increasing trend when the queue size becomes larger
+than 5 AES 2.
+2.4.3 Model IIa: Asymptotic behavior
+Model IIabelongs to a special class of Markov processes, called quasi birth and death processes
+(QBD). Their asymptotic behavior can be studied by the matrix geometric method. Deni-
+tions of QBD processes and explanations about the matrix geometric method can be found in
+appendix. In Figure 5, we show the theoretical joint distribution of ( q1;q2) for the stock France
+Telecom and compare it with the joint distribution estimated from empirical data. Here also,
+we see that the theoretical results provide a very satisfying approximation.
+12
+
+Figure 5: Model IIa: joint distribution of q1;q2, France Telecom
+2.4.4 Model IIb: Modeling bid-ask dependences
+We now study the interactions between the bid queues and the ask queues. Let Q0,Q ,Q,
+Q+be four marks which represent in the following ranges of values for the queue sizes. Let m
+andlbe two integers. We dene the function Sm;l(x):
+Sm;l(x) =Q0ifx= 0
+Sm;l(x) =Q if 0<xm
+Sm;l(x) = Qifm<xl
+Sm;l(x) =Q+ifx>l:
+This function associates to a queue size xfour possible ranges: empty: x= 0, small: x2(0;m],
+usual:x2(m;l] and large: x2(l;+1). We setmas the 33% lower quantile and las the 33%
+upper quantile of q1(conditional on positive values). In this model, market participants at
+Q1adjust their behavior not only according to the target queue size, but also to the size of the
+opposite queue. The rates L
+1andC
+1are therefore modeled as functions of q1andSm;l(q1).
+As in Model IIa, we suppose that market orders consume volume at the best limits and are
+only sent to Q1andQ2. Whenq1>0, the market order intensity M
+buy=sell is assumed to
+be a function of q1andSm;l(q1). Regime switching at Q2is kept in this model: L
+2,C
+2
+are assumed to be functions of 1q1>0andq2, and when q1= 0, the market order intensity
+M
+buy=sell is modeled as a function of q2.
+Under these assumptions, the 2 K-dimensional problem is reduced to the study of the 4-
+dimensional continuous-time Markov jump process ( Q 2;Q 1;Q1;Q2). One important feature
+of this model is that the queues Q2have no inuence on the dynamics at Q1. Therefore, we
+only need to study the 3-dimensional process ( Q 1;Q1;Q2) (or even the 2-dimensional process
+(Q 1;Q1) if one is only interested in the dynamics at Q1. Remark also that other choices for
+the specication of the intensity functions at Q1are possible. For example, one can consider
+them as functions of the rst level bid/ask imbalance, dened asq1 q 1
+q1+q 1, or simply as functions
+of the spread size.
+13
+
+010 20 30 40 00.2 0.4 0.6 0.8 11.2 1.4 
+Queue Size (per average event size) Intensity (num per second) First limit, limit order insertion 
+  q(-1) = 0 
+0<q(-1)<=4 
+4 < q(-1) <= 9 
+q(-1) > 9 
+010 20 30 40 00.2 0.4 0.6 0.8 11.2 1.4 
+Queue Size (per average event size) Intensity (num per second) First limit, limit order cancellation 
+  q(-1) = 0 
+0<q(-1)<=4 
+4 < q(-1) <= 9 
+q(-1) > 9 
+010 20 30 40 00.05 0.1 0.15 0.2 0.25 0.3 
+Queue Size (per average event size) Intensity (num per second) First limit, market order insertion 
+  
+q(-1) = 0 
+0<q(-1)<=4 
+4 < q(-1) <= 9 
+q(-1) > 9 Figure 6: Intensities at Q1as functions ofSm;l(q 1) andq1, France Telecom
+2.4.5 Model IIb: Empirical study
+We focus here on the estimation of the intensity functions at Q1. We consider the depar-
+ture ow intensities C
+1(q1;Sm;l(q1)) andM
+buy=sell (q1;Sm;l(q1)), and the arrival ow inten-
+sitiesL
+1(q1;Sm;l(q1)). Using again the symmetry property of the LOB, we take L
+1(x;y) =
+L
+ 1(x;y),C
+1(x;y) =C
+ 1(x;y) andM
+sell(x;y) =M
+buy(x;y). We record the waiting times  t(!)
+between events that happen at Q1orQ 1, the types of event T(!) and the two queue sizes
+(q1(!);q 1(!)) before the event. Then we estimate these intensity functions using the maxi-
+mum likelihood method. The results are shown in Figure 6 ( m= 4 AES 1,l= 9 AES 1)8. Some
+remarks are in order:
+Limit order insertion: The limit order insertion rate is a decreasing function of the opposite
+queue size. In particular, we see that when the opposite queue is empty (pink curve),
+it is signicantly larger. Indeed, in that case, the \ecient" price is likely to be closer
+to the opposite side. Therefore limit orders at the non empty rst limit are likely to be
+protable.
+Limit order cancellation: The cancellation rates for dierent ranges of Q 1are similar in
+their forms but have dierent asymptotic values. This rate is not surprisingly a decreasing
+function of the liquidity level on the opposite side. Indeed, when this level becomes low,
+many market participants cancel their limit orders and send market orders since the
+market is likely to move in an unfavorable direction.
+Market orders: We see that when the liquidity available on the opposite side is abundant,
+more market orders are sent. Indeed, in that case, transactions at the target queue are
+relatively cheap as its price level is temporarily closer to the ecient price. In the special
+situationq 1= 0, the price level at Q1can seem relatively attractive since it is much
+closer to the reference price than the opposite best price, which is in that case 2 ticks
+away from it. This explains why the market order intensity is larger when the opposite
+queue is empty than when its size is small.
+8Note that the computation of the condence intervals becomes more intricate for this model and the results
+presented are slightly approximate ones, see details in appendix.
+14
+
+Figure 7: Model IIb: joint distribution of q 1;q1, France Telecom
+Figure 8: Model III: joint distribution of q 1;q1, France Telecom
+2.4.6 Model IIb: Asymptotic behavior
+Monte-Carlo simulations are used to obtain the theoretical invariant distribution of the LOB in
+Model IIb. The theoretical and empirical joint distributions of Q 1andQ1are shown in Figure
+7. The dierence between the two graphs comes from the relatively high probabilities of states
+of the form ( x;y) withxandyboth small in empirical data, which are somehow replaced by
+states of the form ( x;0) or (0;y) in the model. Indeed, in practice, a situation where one of
+the rst queue is empty is not likely to remain long since it often leads to a reference price
+change. This eect is not taken into account in Model IIbwhere the reference price is constant,
+but will be investigated in Model III in Section 3.1. We anticipate here by giving in Figure 8
+the joint distribution obtained when suitable moves of the reference price are added within the
+framework of Model IIb(following the approach of Model III in Section 3.1). We now nd that
+the simulated density becomes very close to the empirical one.
+15
+
+Initial Ask 1 Size Initial Bid 1 Size Model I 
+  
+510 15 20 25 30 10 20 30 
+Initial Ask 1 Size Initial Bid 1 Size Model II(a) 
+  
+510 15 20 25 30 10 20 30 
+Initial Ask 1 Size Initial Bid 1 Size Model II(b) 
+  
+510 15 20 25 30 10 20 30 
+Initial Ask 1 Size Initial Bid 1 Size Poisson model
+  
+510 15 20 25 30 10 20 30 
+00.5 1
+00.5 1
+00.5 1
+00.5 1Figure 9: Execution probability of a buying order placed at Q 1att= 0, France Telecom
+2.5 Example of application: Probability of execution
+The preceding models can be used to compute short term predictions about several important
+LOB related quantities. One relevant example is the probability of executing an order before
+the midprice moves. Suppose that at time t= 0, bothQ1andQ 1are not empty. Then a
+trader (called A) submits a buy limit order at Q 1of sizen0and waits in the queue until
+either the order is executed or the opposite queue Q1is totally depleted. The probability of
+execution can be computed in all of the three preceding models, using Monte-Carlo simulations.
+There are two types of orders at Q 1: orders placed before t= 0, thus having higher priority
+compared with the order of trader A, and orders placed after t= 0, having lower priority.
+When a market order arrives at Q 1, the limit order with the highest priority is executed.
+Hence trader A's order starts being executed only when all orders placed at Q 1beforet= 0
+have been either canceled or executed. When a cancellation event happens at Q 1, the precise
+order being canceled is not clearly dened in our models. So, we need to make two additional
+assumptions for the cancellation process.
+Assumption 3. When a cancellation event occurs at Q 1, orders atQ 1have the same proba-
+bility of being canceled (except for the limit order submitted by trader A, which is never canceled).
+Assumption 4. The cancellation intensity at Q 1is supposed to be equal to C
+1(q 1)q 1 n0
+q 1
+instead ofC
+1(q 1), since the order placed by trader A is never canceled.
+Orders with lower priority are actually more likely to be canceled, see Gareche, Disdier, Kock-
+elkoren, and Bouchaud (2013). However, in order to investigate precisely this feature, we would
+need more detailed market data keeping records of the identiers of the submitted and canceled
+orders. As a result, execution probabilities might be slightly overestimated using Assumptions
+3 and 4. Simulation results (for n0= 1) are shown in Figure 9, together with the predictions
+associated to a Poisson model that assumes a linearly increasing cancellation rate. We see that
+our three models give fairly similar execution probabilities, while the Poisson model clearly
+overestimates them.
+16
+
+3 The queue-reactive model: a time consistent model
+with stochastic LOB and dynamic reference price
+We now wish to obtain a model which is relevant on the whole period of interest and provides
+useful applications.
+3.1 Model III: The queue-reactive model
+3.1.1 Building the model
+Letdenote the tick value. We assume here that prefchanges with some probability when
+some event modies the midprice pmid. More precisely, when pmidincreases/decreases9,pref
+increases/decreases by with probability , providedq1= 0 at that moment. Hence changes
+ofprefare possibly triggered by one of the three following events:
+The insertion of a buy limit order within the bid-ask spread while Q1is empty at the
+moment of this insertion, or the insertion of a sell limit order within the bid-ask spread
+whileQ 1is empty at the moment of this insertion.
+A cancellation of the last limit order at one of the best oer queues.
+A market order that consumes the last limit order at one of the best oer queues.
+Whenprefchanges, the value of qiswitches immediately to the value of one of its neighbors (right
+ifprefincreases, left if it decreases). Thus, q1becomes zero when prefdecreases/increases.
+Recall that we keep records of the LOB up to the third limit. Consequently, the value for
+q3whenprefincreases/decreases is drawn from its invariant measure. Note that the queue
+switching process must be handled very carefully: the average event sizes are not the same for
+dierent queues. So, when qibecomesqj, its new value should be re-normalized by the ratio
+between the two average event sizes at QiandQj.
+To possibly incorporate external information, we moreover assume that with probability reinit,
+the LOB state is redrawn from its invariant distribution around the new reference price when
+prefchanges. The parameter reinitcan be understood as the percentage of price changes
+due to exogenous information. In this case, we consider that market participants readjust
+very quickly their order ows around the new reference price, as if a new state of the LOB
+was drawn from its invariant distribution. A similar approach has been used in Cont and
+De Larrard (2013) in a model for best bid and best ask queues, in which reinitis set to 1.
+Under these assumptions, the market dynamics is now modeled by a (2 K+ 1)-dimensional
+Markov process: ~X(t) := (X(t);pref(t)), in the countable state space ~
+ =N2KN, where
+X(t) = (q K(t);:::;q 1(t);q1(t);:::;q K(t)) represents the available volumes at dierent limits.
+In the sequel, Model I is used to describe the LOB dynamics during periods when prefis
+constant (very similar results are obtained in simulations using Model IIaor IIb). Thepref
+change probability and the LOB reinitialization probability reinitare calibrated using the 10
+9Note that in this model, prefdoes not necessarily match its estimated value using the method introduced
+in Section 2.2. However, for large tick assets, the dierence is negligible.
+17
+
+Figure 10: 10 min volatility and mean reversion ratio, France Telecom
+minutes standard deviation of the returns of pmid(the volatility) and the mean reversion ratio
+introduced in Robert and Rosenbaum (2011), dened by
+=Nc
+2Na;
+whereNcis the number of continuations of the estimated prefon the interval of interest (that
+is the number of consecutive moves in the same direction) and Nais the number of alternations
+(that is the number of consecutive moves in opposite directions)10. Indeed, the microstructure
+of large tick assets is well summarized by the parameter , see Robert and Rosenbaum (2011)
+and Dayri and Rosenbaum (2012) and the volatility is of course one of the most important
+low frequency statistics. In Figure 10, we show the surfaces of the 10 min volatility and for
+dierent values of andreinit.
+3.1.2 About the maximal mechanical volatility
+Let us comment now the particular case where we take reinit= 0. In such situation, Model
+III becomes a \purely order book driven model" since the price uctuations are completely
+generated by the LOB dynamics. Our simulations show that under this setting, the maximal
+attainable volatility level (when = 1), which we call maximal mechanical volatility, is much
+lower than the empirical volatility (5 bps compared with 14 bps for the stock France Telecom).
+This suggests that endogenous LOB dynamics alone may not be enough for reproducing the
+market volatility. A closer look at these results shows that the model approximates actually
+quite well the average frequency of price changes, and that the small value of the mechanical
+volatility is mainly due to the strong mean reverting behavior of the price in this purely order
+book driven model. This is because of the often reversed bid-ask imbalance immediately after
+a change of pref. In Figure 10, we can see that the mean reversion ratio is equal to 0 :08 when
+= 1;reinit= 0, which is much smaller than the empirical ratio 0 :39.
+10Note that here we compute the mean reversion ratio of prefwhile the transaction price is usually considered.
+18
+
+3.2 Example of application: Order placement analysis
+We now show how the queue-reactive model can be used in the context of optimal trading. In
+the general framework of optimal execution, the trading horizon is split into small slices (typi-
+cally 5-10 minutes) and an algorithm of execution determines the volume to be executed in each
+slice. This problem, often called \order scheduling problem", has been widely studied in the lit-
+erature, see Bertsimas, Lo, and Hummel (1999); Almgren and Chriss (2000); Bouchard, Dang,
+and Lehalle (2011) for representative examples on this topic. In practice, another optimization
+issue, the \order placement problem", arises naturally once the order scheduling problem has
+been solved: how should the algorithm place orders to execute the target volume?
+This second optimization problem can be seen as the microstructural version of the rst one.
+However, it is much more dicult to solve. Indeed, the price dynamics can no longer be ap-
+proximated by a Brownian motion at these (ultra) high frequency scales. Moreover, the queue
+priority plays an important role as well as other microstructural features of the asset such as the
+tick size, the state of the LOB and the trading speed. This in particular implies that execution
+strategies based on limit or market orders can lead to very dierent outcomes. Some papers
+investigate the consequences of using dierent types of order, see Harris and Hasbrouck (1996),
+while others aim at nding the best position to place limit orders, see Laruelle, Lehalle, and
+Pag es (2013). However, in practice, order placement tactics are usually more complex than
+the ones considered in the academic literature. For example, traders can hide their trading
+intentions by splitting furthermore the target volume within each slice. Also, they may start
+passively, sending limit orders, and then switch to market orders when some market conditions
+change or a stopping time criteria is met. Very few quantitative tools are available for the anal-
+ysis of sophisticated tactics and one often needs to rely on so-called market replayers, in which
+the number of simulations is limited by that of the available trading days in the historical data.
+Moreover, the market impact, that is the average price drift due to our own trading between
+the beginning of the execution and a later time, is often neglected. In contrast, our framework
+is unlimited in number of simulations and is both relevant and easy to use in order to study
+market impact proles and execution costs of complex placement tactics.
+We writentotalfor the total quantity to execute and Mfor the number of slices. An order
+scheduling strategy gives the target quantity to be executed in each slice, denoted by ni(ni0
+andPM
+i=1ni=ntotal). An order placement tactic can be seen as a predened procedure of
+order management, ensuring the execution of the target quantity within the slice. Here, as
+illustration examples, we present two simple tactics, denoted by T1andT2. In thei-th slice,
+both tactics post a limit order of size niat the best oer queue at the beginning of the period,
+and send a market order with all the remaining quantity to complete the execution of the target
+volume at the end time of the slice. In between:
+T1 (Fire and forget): Whenpmidchanges, cancel the limit order and send a market
+order at the opposite side with all the remaining volume if any.
+T2 (Pegging to the best): When the best oer price changes or our order is the only
+remaining order at the best oer limit, cancel the order and repost all the remaining
+volume at the newly revealed best oer queue.
+Since an order placement tactic is often specically designed for a given order scheduling strat-
+egy, comparisons between two tactics should take into account the associated scheduling strat-
+19
+
+egy, together with the target benchmark11. Other parameters can also have inuence when
+comparing two tactics, such as the total quantity to execute ntotaland the number of slices M.
+To simplify our analysis, we simulate a buy order of size ntotal= 60 AES 1, withM= 20 and
+the duration of each slice is xed to 10 minutes (a total trading period of 3h20). We focus on
+two benchmarks: the VWAP on the total period (volume weighted average transaction price)
+and the arrival price S0(the midprice when the execution algorithm starts). Moreover, two
+types of order scheduling strategies, denoted by S1andS2, are considered to partly reect the
+diversity of optimal trading schemes:
+S1:A linear scheduling ( ni=ntotal=M), used for the VWAP benchmark.
+S2:An exponential scheduling ni=ntotal(e (i 1)=4 e i=4), used for the benchmark S0.
+Finally, note that Assumptions 3 and 4 are in force for the order cancellation processes.
+3.2.1 Tactic performance analysis
+The performance of an execution algorithm is often measured by its slippage, dened (for a
+buy order) by
+Slippage =Pbenchmark Pexec
+Pbenchmark:
+To understand the eects of the order placement tactic on the execution's slippage, we dene
+the theoretical scheduling slippage by:
+Ptheo
+exec =MX
+i=1niVWAPi
+Slippagetheo=Pbenchmark Ptheo
+exec
+Pbenchmark;
+where VWAPidenotes the volume weighted average transaction price of the i th slice. Indeed,
+VWAPiis often considered as a simple proxy for the execution price in the slice when one
+focuses on the scheduling algorithm. Hence, Slippagetheoessentially measures the quality of the
+scheduling strategy and neglects the randomness in execution prices due to the order place-
+ment tactic. Note that here a market impact component is included in the computation of the
+theoretical scheduling slippage. This is because the value of VWAPiin each slice is obviously
+impacted by our execution.
+We launched 2000 simulations for each couple of ( S1/S2 ,T1/T2 ). The intensity functions
+estimated for the stock France Telecom are used in these simulations, as well as the two pa-
+rameters= 0:7 andreinit= 0:85 calibrated in Section 3.1. Furthermore, we use a standard
+kernel smoothing method when estimating the probability density functions of Slippagetheoand
+Slippage. The results are shown in Figure 11.
+11In execution services, the client often wants the execution algorithm to target some specic price (the
+arrival price, the average market price during a predened period,...). The quality of the execution is then
+assessed on the basis of the dierence between the realized execution price and this target benchmark price.
+20
+
+-6 -4 -2 024600.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 
+Slippage (bp) Density Function Linear scheduling, VWAP 
+  s1+t1,simulated slippage 
+s1+t1,theoretical slippage 
+s1+t2,simulated slippage 
+s1+t2,theoretical slippage 
+-80 -60 -40 -20 020 40 60 00.005 0.01 0.015 0.02 0.025 0.03 
+Slippage (bp) Density Function Exponential scheduling, Arrival Price 
+  s2+t1,simulated slippage 
+s2+t1,theoretical slippage 
+s2+t2,simulated slippage 
+s2+t2,theoretical slippage Figure 11: Simulation results for the tactics
+Figure 11 suggests that the slippage distributions of the same scheduling strategy using two
+dierent tactics can be very dierent: T2(\Pegging to the best") performs better than T1
+(\Fire and forget") when being coupled with a linear scheduling strategy with VWAP bench-
+mark, while T1slightly outperforms T2when an exponential scheduling strategy with arrival
+price benchmark is considered. In our setting, the limit orders change the queue sizes and
+therefore modify the behaviors of the order ows. Consequently they generate market impact.
+By constantly following the best oer queue until the total volume is lled, T2achieves on
+average a higher passive execution rate (dened as the volume passively executed12divided by
+the total executed volume). Thus, in each slice, it often obtains a better price than that of a
+more market orders based tactic. However, at the same time, it creates a larger impact than
+T1since the order stays longer in the queues. This explains why the theoretical scheduling
+slippage of T2is worse than that of T1for an execution with arrival price benchmark using
+an exponential scheduling strategy.
+3.2.2 Market impact proles
+We now study the market impact proles of these two tactics. Recall that an order placement
+tactic has two parameters: the slice duration Tand the quantity to execute n. In the follow-
+ing experiments, Tis set to 10 minutes, and the value of nvaries from 1 to 60 AES 1. We
+denote by MIi(t;n) the market impact at time tof Tacticiwith target quantity n, dened by:
+MIi(t;n) = E[St S0
+S0], withStthe midprice at time t. We launched 2000 simulations for each
+value ofn;tin the ranges 1-60 AES 1and 1-600 seconds. Impact proles are given in Figure 12.
+In agreement with the celebrated \square-root law", see Gatheral (2010); Toth, Lemperiere,
+Deremble, De Lataillade, Kockelkoren, and Bouchaud (2011a); Farmer, Gerig, Lillo, and Wael-
+broeck (2013), the market impact curves are concave both in time and volume. One can also
+see that the impact of T1is quite instantaneous and depends essentially on the target quantity
+n, while the impact of T2is a progressive process, depending both on the target quantity n
+and the time t. Remark that T2seems suitable when dealing with small orders since its market
+impact is small and it has a higher passive execution rate than T1. If one needs to trade larger
+12A buy execution is said to be passive if it occurs at the bid side of the LOB, aggressive if it occurs at the
+ask side of the LOB.
+21
+
+0100 200 300 400 500 600 0123456
+Time (second) Impact (bp) Market impact profile Tactic 1 
+  
+n = 1 
+n = 10 
+n = 20 
+n = 30 
+n = 40 
+n = 50 
+n = 60 
+0100 200 300 400 500 600 0510 15 20 25 
+Time (second) Impact (bp) Market impact profile Tactic 2 
+  
+n = 1 
+n = 10 
+n = 20 
+n = 30 
+n = 40 
+n = 50 
+n = 60 Figure 12: Market impact proles
+orders, T1becomes probably more relevant since the cost of market impact is likely to outweigh
+the benet from passive execution of T2. Finally, note that in our Markovian framework, no
+signicant price relaxation (that is the fact that on average, after the completion of the execu-
+tion of a buy order, the price may drop to a lower level than the one reached at the end of the
+execution) can be observed.
+4 Conclusion and perspectives
+In this work, we have modeled market participants intelligence through their average behaviors
+towards various states of the LOB. This enabled us to analyze the dierent order ows and to
+design a suitable market simulator for practitioners, allowing notably to investigate the trans-
+action costs of complex trading strategies. To our knowledge, our model is the rst one where
+such pre-trade cost analysis is possible in a simple and ecient way.
+Another important public information, the historical order ow, is not considered in this ap-
+proach. Market order ows have been shown to be autocorrelated in several empirical studies,
+see for example Toth, Palit, Lillo, and Farmer (2011b). Thus, adding such feature in our frame-
+work would probably be relevant. Another possible direction for future research would be to
+explain the shape of the estimated intensity functions in a more sophisticated way. For example,
+it would be interesting to design some agent based model where these repetitive patterns of the
+LOB dynamics would be reproduced, providing an even better understanding of the nature of
+these intensity curves.
+22
+
+5 Appendix
+5.1 Proof of Theorem 2.1
+Proof. For somez >1, set
+V(q) =KX
+j= K;j6=0zjqj Cboundj+:
+For anyq2
+, we have:
+QV(q) =X
+p6=qQq;p[V(p) V(q)]
+=KX
+i= K;i6=0[fi(q)(zjqi+1 Cboundj+ zjqi Cboundj+) +gi(q)(zjqi 1 Cboundj+ zjqi Cboundj+)]
+=KX
+i= K;i6=0[fi(q)1qiCboundzjqi Cboundj+(z 1) +gi(q)1qiCbound +1zjqi Cboundj+(1
+z 1)]
+= (z 1)KX
+i= K;i6=0[fi(q)1qiCbound gi(q)1qiCbound +1
+z]zjqi Cboundj+
+= (z 1)X
+i:qi=Cboundfi(q) + (z 1)X
+i:qi>Cbound[fi(q) gi(q)
+z]zqi Cbound: (1)
+Under Assumption 1 and 2, we can nd a zsuciently close to 1 such that, if qi>C bound,
+fi(q) gi(q)
+z<z 1( r+H(z 1)) = r0<0:
+So, from Equation (1), we have
+QV(q)(z 1)H (z 1)X
+i:qi>Cboundr0zqi Cbound
+   (z 1)r0X
+izjqi Cboundj++ (z 1)H+ 2(z 1)r0K
+   (z 1)r0V(q) + (z 1)[H+ 2r0Kz]:
+ThusX(t) is V-uniformly ergodic. Then using Theorem 4.2 in Meyn and Tweedie (1993), X(t)
+is Harris positive recurrent and has a nite invariant measure. Furthermore, by Theorem 3.6.2
+in Norris (1998), the process X(t) converges to its equilibrium and is therefore ergodic.
+5.2 Computation of condence intervals
+When the queues are independent, by the central limit theorem, we have, with asymptotic
+probability 95% (we note ^ piL(n) =#fT(!)2E+;qi(!)=ng
+#fqi(!)=ng):
+i(n)2[^i(n) 1:96^i(n)p
+#fqi(!) =ng;^i(n) +1:96^i(n)p
+#fqi(!) =ng]
+L
+i(n)
+i(n)2[ ^piL(n) 1:96q
+^piL(n)(1 ^piL(n))
+p
+#fqi(!) =ng;^piL(n) +1:96q
+^piL(n)(1 ^piL(n))
+p
+#fqi(!) =ng]:
+23
+
+So, at least with probability 90%:
+L
+i(n)2[(^i(n) 1:96^i(n)p
+#fqi(!) =ng)( ^piL(n) 1:96q
+^piL(n)(1 ^piL(n))
+p
+#fqi(!) =ng)
+(^i(n) +1:96^i(n)p
+#fqi(!) =ng)( ^piL(n) +1:96q
+^piL(n)(1 ^piL(n))
+p
+#fqi(!) =ng)]:
+Similar results can be computed for C
+iandM
+i. The method used to compute condence
+intervals of Model IIais quite similar. Condence intervals are more dicult to compute in
+Model IIb, and we use approximations by neglecting the possible intersections between the two
+sets:fq1(!) =n;Sm;l(q 1(!))2s)gandfq 1(!) =n;Sm;l(q1(!))2s)g.
+5.3 Quasi birth and death process
+Denition 5.1. (Quasi birth and death process, from Latouche and Ramaswami (1999)): A
+quasi birth and death (QBD) process is a bivariate Markov process with countable state space
+S=f(i;j) :i0;j= 0;1;:::;mgwhere the rst element iis called the level of the process, and
+the second element jis called the phase of the process. The parameter mcan be either nite or
+innite. The process is restricted in level jumps only to its nearest neighbors, meaning that the
+probability of jumping from level idirectly to level l;li+ 2orli 2is equal to zero.
+We can easily see that the Markov process ( q1;q2) in Model IIais indeed a QBD process with
+countable phases. Its innitesimal generator matrix is of the following form:
+Q=2
+6664A(0)
+1A(0)
+0 0 0:::
+A(1)
+2A(1)
+1A(1)
+0 0:::
+0A(2)
+2A(2)
+1A(2)
+0:::
+::: ::: ::: ::: :::3
+7775;
+where the matrix A(`)
+0encodes transitions from level q1=`to levelq1=`+ 1, matrix A(`)
+2
+encodes transitions from level q1=`to levelq1=` 1, and matrix A(`)
+1encodes transitions
+within level q1=`. More specically, the element ( i;j) ofA(`)
+0is the transition rate from state
+(q1=`;q2=i) to state (q1=`+ 1;q2=j), the element ( i;j) ofA(`)
+2is the transition rate from
+state (q1=`;q2=i) to state (q1=` 1;q2=j), and the element ( i;j) ofA(`)
+1is the transition
+rate from state ( q1=`;q2=i) to state (q1=`;q2=j).
+We write the intensity functions at Q2whenq1= 0 with a ~ . For matrix A(`)
+i,i= 0;1;2, we
+have:
+A(k)
+0=L
+1(k)I;
+A(k)
+2= (C
+1(k) +M
+buy(k))I;
+A(0)
+1=2
+664 L
+1(0) ~L
+2(0) ~L
+2(0) 0 :::
+~C
+2(1) + ~M
+buy(1) L
+1(0) ~L
+2(1) ~C
+2(1) ~M
+buy(1) ~L
+2(1) :::
+0 ~C
+2(2) + ~M
+buy(2) L
+1(0) ~L
+2(2) ~C
+2(2) ~M
+buy(2):::
+::: ::: ::: :::3
+775;
+24
+
+and fork1:
+A(k)
+1=2
+4 C
+1(k) M
+buy(k) L
+1(k) L
+2(0) L
+2(0) 0 :::
+C
+2(1)  C
+1(k) M
+buy(k) L
+1(k) L
+2(1) C
+2(1)L
+2(1):::
+::: ::: ::: :::3
+5:
+We denei;j=P[q1=i;q2=j] the stationary distribution of this QBD process, and:
+n= [n;0;n;1;:::]
+= [0;1;:::]:
+We shall have:
+Q = 0
+1 = 1:
+The dynamics of the two queues system ( q1;q2) is level dependent, meaning that its transi-
+tion kernel depends on the value of q1. This makes the computation or approximation of its
+asymptotic behavior quite dicult. Thus we consider an additional assumption in order to turn
+(q1;q2) into a so-called level independent QBD process. This is particularly interesting since it
+enables us to easily express the invariant measure in a matrix geometric form and to compute
+it numerically. The level independence property is dened by the fact that for i1,A(i)
+0,A(i)
+1
+andA(i)
+2do not depend on iandA(0)
+0=A(i)
+0, see Latouche and Ramaswami (1999). Under the
+following assumption, this property is satised by ( q1;q2) in Model IIa.
+Assumption 5. (Independent Poisson ows at rst limits) There are two positive constants
+1and1, with1< 1, such that for k1:
+C
+1(k) +M
+buy(k) =1
+L
+1(k) =1
+L
+1(0) =1:
+In practice, 1and1are taken as the average values of the estimated intensity functions
+at rst limits. Under this assumption, a quite simple numerical computation of the invariant
+distribution is possible. Generally speaking, QBD processes with nite phase (meaning that
+the value set of the second dimension, in our case q2, is nite) can be easily treated, see for
+example Latouche and Ramaswami (1999). In the innite case, truncation methods must be
+applied to obtain approximate results. Thanks to the special structure of the generator in our
+model, one simple truncation method, called \rst column augmentation by block", can be
+applied. Details of this truncation method can be found in Bean and Latouche (2010). The
+mathlab toolbox SMCSolver, see Bini, Meini, Ste e, and Van Houdt (2006), is used to compute
+the invariant measure.
+5.4 Alcatel-Lucent
+Results for the stock Alcatel-Lucent are presented in the following gures (Figure 13 to Figure
+18).
+25
+
+010 20 30 40 50 0.2 0.4 0.6 0.8 11.2 1.4 1.6 
+Queue Size (per average event size) Intensity (num per second) Limit order insertion intensity, Model I 
+  
+First limit 
+Second limit 
+Third limit 
+010 20 30 40 50 00.1 0.2 0.3 0.4 0.5 0.6 0.7 
+Queue Size (per average event size) Intensity (num per second) Limit order cancellation intensity, Model I 
+  
+First limit 
+Second limit 
+Third limit 
+010 20 30 40 50 00.05 0.1 0.15 0.2 0.25 0.3 0.35 0.4 
+Queue Size (per average event size) Intensity (num per second) Market order arrival intensity, Model I 
+  
+First limit 
+Second limit 
+Third limit Figure 13: Intensities at Q1;2;3, Alcatel Lucent
+010 20 30 40 00.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1
+Queue Size (per average event size) Intensity (num per second) Second limit, limit order insertion 
+  
+010 20 30 40 00.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1
+Queue Size (per average event size) Intensity (num per second) Second limit, limit order cancellation 
+  
+010 20 30 40 00.05 0.1 0.15 
+Queue Size (per average event size) Intensity (num per second) Second limit, market order insertion 
+  
+q1 == 0 
+q1 > 0 q1 == 0 
+q1 > 0 q1 == 0 
+q1 > 0 
+Figure 14: Intensities at Q2as functions of 1 q1>0andq2, Alcatel Lucent
+010 20 30 40 00.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 
+Queue Size (per average event size) Intensity (num per second) First limit, limit order insertion 
+  
+q(-1) = 0 
+0<q(-1)<=2 
+2 < q(-1) <= 5 
+q(-1) > 5 
+010 20 30 40 00.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 
+Queue Size (per average event size) Intensity (num per second) First limit, limit order cancellation 
+  
+q(-1) = 0 
+0<q(-1)<=2 
+2 < q(-1) <= 5 
+q(-1) > 5 
+010 20 30 40 00.05 0.1 0.15 0.2 0.25 0.3 
+Queue Size (per average event size) Intensity (num per second) First limit, market order insertion 
+  
+q(-1) = 0 
+0<q(-1)<=2 
+2 < q(-1) <= 5 
+q(-1) > 5 
+Figure 15: Intensities at Q1as functions ofSm;l(q 1) andq1, Alcatel Lucent
+26
+
+010 20 30 40 50 00.02 0.04 0.06 0.08 0.1 0.12 0.14 0.16 0.18 0.2 First limit 
+Queue size (in AES) Distribution 
+  
+010 20 30 40 50 00.02 0.04 0.06 0.08 0.1 0.12 0.14 0.16 0.18 0.2 Second limit 
+Queue size (in AES) Distribution 
+  
+010 20 30 40 50 00.02 0.04 0.06 0.08 0.1 0.12 0.14 0.16 0.18 0.2 Third limit 
+Queue size (in AES) Distribution 
+  
+Empirical estimation 
+Model I 
+Poisson ModelEmpirical estimation 
+Model I 
+Poisson ModelEmpirical estimation 
+Model I 
+Poisson ModelFigure 16: Queue distribution, Alcatel Lucent
+Figure 17: Model IIa: joint distribution of q1;q2, Alcatel Lucent
+Figure 18: Model IIb: joint distribution of q 1;q1, Alcatel Lucent
+27
+
+5.5 AES
+AES iis dened as the average size of all events (including limit order insertion, cancellation
+and trades) at Qi, while ATS computes only the average size of all trade events. In Table 5.5
+we show the estimated values of AES at dierent distances to prefand the estimated value of
+ATS, for the stocks France Telecom and Alcatel-Lucent.
+stock ATS AES 1AES 2AES 3
+France Telecom 637 836 1068 1069
+Alcatel Lucent 2340 3033 3451 3528
+Table 2: AES and ATS (in number of stocks)
+References
+Abergel, F. and Jedidi, A. (2011), \A mathematical approach to order book modelling," in
+Econophysics of Order-driven Markets , Springer, pp. 93{107.
+Almgren, R. and Chriss, N. (2000), \Optimal execution of portfolio transactions," Journal of
+Risk, 3, 5{39.
+Avellaneda, M. and Stoikov, S. (2008), \High-frequency trading in a limit order book," Quan-
+titative Finance , 8, 217{224.
+Bean, N. and Latouche, G. (2010), \Approximations to quasi-birth-and-death processes with
+innite blocks," Advances in Applied Probability , 42, 1102{1125.
+Bertsimas, D., Lo, A. W., and Hummel, P. (1999), \Optimal control of execution costs for
+portfolios," Computing in Science and Engg. , 1, 40{53.
+Bini, D., Meini, B., Ste e, S., and Van Houdt, B. (2006), \Structured Markov chains solver:
+algorithms," in Proceeding from the 2006 workshop on Tools for solving structured Markov
+chains , ACM, p. 13.
+Bouchard, B., Dang, N.-M., and Lehalle, C.-A. (2011), \Optimal control of trading algorithms:
+a general impulse control approach," SIAM Journal on Financial Mathematics , 2, 404{438.
+Cont, R. and De Larrard, A. (2013), \Price dynamics in a Markovian limit order market,"
+SIAM Journal on Financial Mathematics , 4, 1{25.
+Cont, R., Stoikov, S., and Talreja, R. (2010), \A stochastic model for order book dynamics,"
+Operations research , 58, 549{563.
+Dayri, K. and Rosenbaum, M. (2012), \Large tick assets: implicit spread and optimal tick size,"
+Preprint arXiv:1207.6325 .
+Delattre, S., Robert, C. Y., and Rosenbaum, M. (2013), \Estimating the ecient price from the
+order ow: a Brownian Cox process approach," Stochastic Processes and their Applications ,
+123, 2603{2619.
+28
+
+Farmer, J. D., Gerig, A., Lillo, F., and Waelbroeck, H. (2013), \How eciency shapes market
+impact," Quantitative Finance , 13, 1743{1758.
+Gareche, A., Disdier, G., Kockelkoren, J., and Bouchaud, J.-P. (2013), \A Fokker-Planck de-
+scription for the queue dynamics of large tick stocks," Preprint arXiv:1304.6819 .
+Gatheral, J. (2010), \No-dynamic-arbitrage and market impact," Quantitative Finance , 10,
+749{759.
+Gross, D. and Harris, C. M. (1998), Fundamentals of queuing theory , Wiley New York.
+Harris, L. and Hasbrouck, J. (1996), \Market vs. limit orders: the SuperDOT evidence on order
+submission strategy," Journal of Financial and Quantitative analysis , 31, 213{231.
+Laruelle, S., Lehalle, C.-A., and Pag es, G. (2013), \Optimal posting price of limit orders:
+learning by trading," Mathematics and Financial Economics , 7, 359{403.
+Latouche, G. and Ramaswami, V. (1999), Introduction to matrix analytic methods in stochastic
+modeling , vol. 5, ASA-SIAM.
+Madhavan, A., Richardson, M., and Roomans, M. (1997), \Why do security prices change? A
+transaction-level analysis of NYSE stocks," Review of Financial Studies , 10, 1035{1064.
+Meyn, S. P. and Tweedie, R. L. (1993), \Stability of Markovian processes III: Foster-Lyapunov
+criteria for continuous-time processes," Advances in Probability , 518{548.
+Norris, J. R. (1998), Markov chains , no. 2008, Cambridge University Press.
+Robert, C. Y. and Rosenbaum, M. (2011), \A new approach for the dynamics of ultra-high-
+frequency data: the model with uncertainty zones," Journal of Financial Econometrics , 9,
+344{366.
+Smith, E., Farmer, D. J., Gillemot, L., and Krishnamurthy, S. (2003), \Statistical theory of the
+continuous double auction," Quantitative Finance , 3, 481{514.
+Toth, B., Lemperiere, Y., Deremble, C., De Lataillade, J., Kockelkoren, J., and Bouchaud, J.-P.
+(2011a), \Anomalous price impact and the critical nature of liquidity in nancial markets,"
+Physical Review X , 1, 021006.
+Toth, B., Palit, I., Lillo, F., and Farmer, J. D. (2011b), \Why is order ow so persistent?"
+arXiv preprint arXiv:1108.1632 .
+Wyart, M., Bouchaud, J.-P., Kockelkoren, J., Potters, M., and Vettorazzo, M. (2008), \Rela-
+tion between bid{ask spread, impact and volatility in order-driven markets," Quantitative
+Finance , 8, 41{57.
+29
+

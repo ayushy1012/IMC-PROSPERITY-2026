@@ -1,0 +1,120 @@
+"""Fine-grained grid search for advanced quant parameters.
+Tests smaller weight magnitudes to find subtle improvements.
+Two-phase: OSM then IPR, reproduce mode only."""
+import subprocess
+import itertools
+import re
+import shutil
+import time
+
+TRADER_PATH = "Trader/trader.py"
+BACKUP_PATH = "Trader/trader.py.bak"
+
+def read_trader():
+    with open(TRADER_PATH, 'r') as f:
+        return f.read()
+
+def write_trader(content):
+    with open(TRADER_PATH, 'w') as f:
+        f.write(content)
+
+def run_simulation():
+    res = subprocess.run(
+        [".venv/bin/python3", "Backtester/accurate_backtester.py",
+         TRADER_PATH, "logs/115554.log", "--official-mode", "reproduce"],
+        capture_output=True, text=True, timeout=30,
+    )
+    ash = 0
+    ipr = 0
+    for line in res.stdout.splitlines():
+        if line.startswith("ASH_COATED_OSMIUM:"):
+            raw = line.split(":")[-1].strip().replace(",", "")
+            try: ash = float(raw)
+            except: pass
+        elif line.startswith("INTARIAN_PEPPER_ROOT:"):
+            raw = line.split(":")[-1].strip().replace(",", "")
+            try: ipr = float(raw)
+            except: pass
+    if ipr == 0 and ash == 0:
+        return -999999, -999999
+    return ash, ipr
+
+def modify_code(code, params):
+    modified = code
+    for k, v in params.items():
+        modified = re.sub(rf"({k}\s*=\s*)[-0-9.]+", rf"\g<1>{v:.4f}", modified, count=1)
+    return modified
+
+def sweep(original_code, param_grid, label):
+    keys = list(param_grid.keys())
+    values = list(param_grid.values())
+    combinations = list(itertools.product(*values))
+    n = len(combinations)
+
+    best_total = -999999
+    best_params = {}
+    best_ash = 0
+    best_ipr = 0
+
+    print(f"\n===== {label} ({n} combos) =====")
+    t0 = time.time()
+    for i, combo in enumerate(combinations):
+        params = dict(zip(keys, combo))
+        write_trader(modify_code(original_code, params))
+        ash, ipr = run_simulation()
+        total = ash + ipr
+
+        if total > best_total:
+            best_total = total
+            best_params = params
+            best_ash = ash
+            best_ipr = ipr
+            eta = (time.time() - t0) / (i + 1) * (n - i - 1)
+            print(f"  [{i+1}/{n}] 🚀 TOTAL={total:.0f} (ASH={ash:.0f} IPR={ipr:.0f}) ETA={eta:.0f}s | {params}")
+        elif (i + 1) % 50 == 0:
+            eta = (time.time() - t0) / (i + 1) * (n - i - 1)
+            print(f"  [{i+1}/{n}] TOTAL={total:.0f} ETA={eta:.0f}s")
+
+    elapsed = time.time() - t0
+    print(f"  Best: TOTAL={best_total:.0f} (ASH={best_ash:.0f} IPR={best_ipr:.0f}) in {elapsed:.1f}s")
+    for k, v in best_params.items():
+        print(f"    {k} = {v}")
+    return best_params
+
+def gridsearch():
+    print("Backing up trader.py...")
+    shutil.copy(TRADER_PATH, BACKUP_PATH)
+    original_code = read_trader()
+
+    # Phase 1: OSM fine grid (smaller magnitudes)
+    osm_grid = {
+        "OSM_SPREAD_REGIME_W": [0.0, 0.05, 0.15],
+        "OSM_INV_SKEW_W": [0.0, 0.1, 0.3],
+        "OSM_ACCEL_FAIR_W": [0.0, 0.1, 0.3],
+        "OSM_ACCEL_TARGET_W": [0.0, 0.5],
+    }
+    best_osm = sweep(original_code, osm_grid, "PHASE 1: OSM (fine)")
+    osm_locked_code = modify_code(original_code, best_osm)
+
+    # Phase 2: IPR fine grid
+    ipr_grid = {
+        "IPR_SPREAD_REGIME_W": [0.0, 0.1, 0.3],
+        "IPR_INV_SKEW_W": [0.0, 0.3, 0.8],
+        "IPR_ACCEL_FAIR_W": [0.0, 0.5, 1.0],
+        "IPR_ACCEL_TARGET_W": [0.0, 1.0],
+    }
+    best_ipr = sweep(osm_locked_code, ipr_grid, "PHASE 2: IPR (fine)")
+
+    # Write final
+    final_params = {**best_osm, **best_ipr}
+    write_trader(modify_code(original_code, final_params))
+
+    ash, ipr = run_simulation()
+    print(f"\n================ FINAL VERIFICATION ================")
+    print(f"Total PnL: {ash + ipr:.0f} (ASH={ash:.0f} IPR={ipr:.0f})")
+    for k, v in final_params.items():
+        print(f"  {k} = {v}")
+    print("Committed best params to trader.py")
+
+if __name__ == '__main__':
+    gridsearch()

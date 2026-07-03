@@ -1,0 +1,206 @@
+{
+    "mean_profit": 495.8958333333333,
+    "stdev_profit": 567.8576851822711,
+    "individual_runs": [
+        {
+            "env_id": "46146.log",
+            "profit": 474.0
+        },
+        {
+            "env_id": "39181.log",
+            "profit": 488.0
+        },
+        {
+            "env_id": "60223.log",
+            "profit": 118.0
+        },
+        {
+            "env_id": "63717.log",
+            "profit": 118.0
+        },
+        {
+            "env_id": "63515.log",
+            "profit": 118.0
+        },
+        {
+            "env_id": "42652.log",
+            "profit": 1585.0
+        },
+        {
+            "env_id": "43564.log",
+            "profit": 552.0
+        },
+        {
+            "env_id": "72193.log",
+            "profit": 118.0
+        },
+        {
+            "env_id": "42655.log",
+            "profit": 118.0
+        },
+        {
+            "env_id": "40137.log",
+            "profit": 328.0
+        },
+        {
+            "env_id": "45955.log",
+            "profit": 118.0
+        },
+        {
+            "env_id": "46044.log",
+            "profit": 96.0
+        },
+        {
+            "env_id": "46326.log",
+            "profit": 1585.0
+        },
+        {
+            "env_id": "43506.log",
+            "profit": 700.0
+        },
+        {
+            "env_id": "45572.log",
+            "profit": 568.0
+        },
+        {
+            "env_id": "41674.log",
+            "profit": 118.0
+        },
+        {
+            "env_id": "39283.log",
+            "profit": 1046.0
+        },
+        {
+            "env_id": "72047.log",
+            "profit": 160.0
+        },
+        {
+            "env_id": "45628.log",
+            "profit": 300.0
+        },
+        {
+            "env_id": "40156.log",
+            "profit": 248.0
+        },
+        {
+            "env_id": "48866.log",
+            "profit": 718.0
+        },
+        {
+            "env_id": "60252.log",
+            "profit": 118.0
+        },
+        {
+            "env_id": "46096.log",
+            "profit": 160.0
+        },
+        {
+            "env_id": "45814.log",
+            "profit": 118.0
+        },
+        {
+            "env_id": "64819.log",
+            "profit": 118.0
+        },
+        {
+            "env_id": "71794.log",
+            "profit": 118.0
+        },
+        {
+            "env_id": "46266.log",
+            "profit": 1585.0
+        },
+        {
+            "env_id": "49424.log",
+            "profit": 718.0
+        },
+        {
+            "env_id": "46071.log",
+            "profit": 882.0
+        },
+        {
+            "env_id": "45989.log",
+            "profit": 118.0
+        },
+        {
+            "env_id": "60274.log",
+            "profit": 1168.0
+        },
+        {
+            "env_id": "40371.log",
+            "profit": 124.0
+        },
+        {
+            "env_id": "81677.log",
+            "profit": 2635.0
+        },
+        {
+            "env_id": "43536.log",
+            "profit": 622.0
+        },
+        {
+            "env_id": "40349.log",
+            "profit": 124.0
+        },
+        {
+            "env_id": "45741.log",
+            "profit": 389.0
+        },
+        {
+            "env_id": "56662.log",
+            "profit": 160.0
+        },
+        {
+            "env_id": "71395.log",
+            "profit": 118.0
+        },
+        {
+            "env_id": "45970.log",
+            "profit": 0.0
+        },
+        {
+            "env_id": "64846.log",
+            "profit": 118.0
+        },
+        {
+            "env_id": "41621.log",
+            "profit": 1585.0
+        },
+        {
+            "env_id": "63682.log",
+            "profit": 118.0
+        },
+        {
+            "env_id": "32627.log",
+            "profit": 118.0
+        },
+        {
+            "env_id": "56821.log",
+            "profit": 160.0
+        },
+        {
+            "env_id": "45681.log",
+            "profit": 118.0
+        },
+        {
+            "env_id": "46015.log",
+            "profit": 389.0
+        },
+        {
+            "env_id": "45939.log",
+            "profit": 0.0
+        },
+        {
+            "env_id": "43554.log",
+            "profit": 1592.0
+        },
+        {
+            "env_id": "40077.log",
+            "profit": 474.0
+        },
+        {
+            "env_id": "39013.log",
+            "profit": 182.0
+        }
+    ]
+}

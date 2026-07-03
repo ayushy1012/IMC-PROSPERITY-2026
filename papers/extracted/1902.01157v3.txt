@@ -1,0 +1,2656 @@
+Optimal market making under partial information with general
+intensities
+Luciano Campi and Diego Zabaljauregui
+Department of Statistics
+London School of Economics and Political Science
+Abstract
+Starting from the Avellaneda{Stoikov framework [AS08], we consider a market maker who
+wants to optimally set bid/ask quotes over a nite time horizon, to maximize her expected
+utility. The intensities of the orders she receives depend not only on the spreads she quotes,
+but also on unobservable factors modelled by a hidden Markov chain. We tackle this stochas-
+tic control problem under partial information with a model that unies and generalizes
+many existing ones under full information, combining several risk metrics and constraints,
+and using general decreasing intensity functionals. We use stochastic ltering, control and
+piecewise-deterministic Markov processes theory, to reduce the dimensionality of the prob-
+lem and characterize the reduced value function as the unique continuous viscosity solution
+of its dynamic programming equation. We then solve the analogous full information problem
+and compare the results numerically through a concrete example. We show that the opti-
+mal full information spreads are biased when the exact market regime is unknown, and the
+market maker needs to adjust for additional regime uncertainty in terms of P&L sensitivity
+and observed order ow volatility. This eect becomes higher, the longer the waiting time
+in between orders.
+Keywords: Market making, High-frequency trading, Algorithmic trading, Stochastic optimal
+control, Hidden Markov model, Stochastic ltering, Viscosity solutions, Piecewise-deterministic
+Markov processes.
+Introduction
+Given a nancial market, a market maker (MM) can be understood as someone who provides
+liquidity for a certain asset. That is, she (almost) continuously posts bid/ask quotes for the
+asset, in the hope to prot from the bid-ask spread. In choosing how to do so, the MM faces
+a complicated problem on several levels; namely: the instantaneous margin/volume trade-o
+(the further away she quotes from the \fair price", the less she gets executed, and vice-versa),
+adverse price movements and inventory risk (exposure), execution costs, and many others.
+An increasingly popular mathematical approach to the MM problem, both in academia and
+in practice, is by means of stochastic optimal control. In particular, a line of research has
+focused on the modelling framework proposed by Avellaneda and Stoikov [AS08] (rooted in
+turn in [HS81]). Although widely motivated in the literature by order-driven markets such as
+equity markets, the shape of the limit order book is not explicitly taken into account. Thus,
+the framework is more easily understood and applied to over-the-counter (OTC) quote-driven
+Corresponding Author. E-mail: d.zabaljauregui@lse.ac.uk
+The authors would like to thank Alvaro Cartea and Katia Colaneri for helpful discussions on the subject.
+1arXiv:1902.01157v3  [q-fin.TR]  16 Apr 2020
+
+markets such as the foreign exchange (FX) market, and we therefore choose to present it in this
+setting.
+In this framework, the MM gives rm bid-ask quotes during a nite time interval by choosing
+bid/ask spreads with respect to a certain reference price .1Depending on the market, this price
+could be for example an aggregated mid-price or a dealer-to-dealer price, and it is frequently
+assumed to behave as an arithmetic Brownian motion. To explicitly model the margin/volume
+trade-o, the probability that the MM gets executed decays as a function of the corresponding
+spread. More precisely, it is assumed that the MM receives market orders according to counting
+processes of stochastic intensity. Most typically in the mathematical literature, intensities are
+assumed to decay exponentially on the spreads (mainly for tractability reasons). The goal of
+the MM is to nd a strategy that allows her to maximize her expected terminal utility, which is
+taken as a constant absolute risk aversion (CARA) utility. The problem is then translated into
+a deterministic one: solving the associated Hamilton{Jacobi{Bellman (HJB) equation, which
+is a partial-integro dierential equation (PIDE) for the MM's value function, and ultimately
+retrieving the optimal strategy in feedback form.
+Within the described framework, a lot variants have been put forward and extensively
+studied. In [BL14, GLFT12], Bayraktar and Ludkovski, and Gu eant, Lehalle and Fernandez-
+Tapia, apply a one-trading-side version to optimal liquidation in the risk-neutral and risk averse
+contexts, respectively. The introduction of a constraint on the inventory in [GLFT13], allowed
+the authors to rigorously solve the original problem of [AS08] with exponential intensities, by
+means of a verication theorem. This constraint has been widely used moving forward, with
+the exception of [FL12,FL13], where strategies are derived without a verication theorem.
+Gu eant and Lehalle continued to actively contribute to the area. In [GL15], they revisit
+the risk averse optimal liquidation problem for general intensities satisfying a certain ordinary
+dierential inequality, and in [Gu e17] the same is done for market making.2This assumption
+had been rstly introduced in [BL14, Sect.5.3] under risk-neutrality.
+Other prolic contributors in the eld are Cartea, Jaimungal and their coauthors [CJ15,
+CJP15,CJR14], who introduced a quadratic running penalty on the inventory to manage the \ac-
+cumulated" inventory risk for an otherwise risk-neutral MM. Constraints on the MM's spreads
+have also been considered in some of them. It is worth noting that [Gu e17] shows how the two
+seemingly dierent subclasses of models (risk averse and \risk-neutral" with running penalty)
+can ultimately be characterized by a unique system of ordinary dierential equations (ODEs)
+when considering two appropriate ansatz.
+A relevant issue in practice that has not been included in the previous models is the following
+one. Empirical evidence (see, e.g., [CJ13]) suggests that liquidity taken by clients depends not
+only on the quoted spreads but also on other unobservable factors. Indeed, the conuence of
+factors such as market sentiment towards the asset and the competition with other market
+makers also aects the intensities at which the MM receives orders. This complicated eect can
+be modelled in a simplied fashion by making the intensities depend as well on a hidden nite-
+state Markov chain, eectively reecting the regime or state of the market (dierent levels from
+very slow to very active). To the best of our knowledge, this has only been briey done in the
+Avellaneda{Stoikov framework by proposing an approximation for the optimal strategy with
+exponential intensities [CJ13, Sect.5.1] or studying a simple two-states version with power-law
+intensities [BL14, Sect.5.4]. Both of these papers deal only with the \risk-neutral" (possibly
+penalized) case and make the unrealistic assumption that the current market regime is known
+by the MM.3
+When the state of the market is unknown, the problem becomes signicantly more challeng-
+1Also referred to by some authors as micro-price [CJP15] or ecient price [DRR13] in the martingale case.
+2The latter paper also considers the multi-asset case.
+3[BL09, Sect.3.3] (arXiv version) and [CJ19] also study optimal trade execution under partial information,
+albeit with uncontrolled intensities.
+2
+
+ing for several reasons:
+It becomes a combined problem of stochastic control and ltering. The MM needs to
+dynamically make her best possible prediction of the market regime (or more precisely, its
+distribution), based on the information she has (i.e., the orders she has received so far and
+the evolution of the reference price), and adjust her spreads accordingly. This prediction
+is known as a lter.
+The associated HJB PIDE has higher dimension and more non-linearities.
+The standard approach used in all of the previously cited papers relies on reducing the
+HJB PIDE to a system of ODEs by means of an ansatz, proving that such a system has a
+classical (smooth) solution, and recovering the value function via a verication theorem.
+Under partial information however, the reduced HJB equation is still a complicated PIDE
+such that, in general, a classical solution may not exist (or it may be too dicult to prove
+otherwise). Hence, the ansatz argument breaks down.
+As a consequence, one needs to resort to the concept of viscosity solutions [FS06]. In
+addition, the numerical resolution unfailingly becomes a lot more involved than for simple
+systems of ODEs.
+On a technical level, the construction of the model is not straightforward. The MM needs
+to adjust her strategy based on her observable information, such as the arriving orders,
+but this ow of information is in turn aected by the MM's actions.
+In this paper, we solve the problem of the MM under partial information. First, we start
+by unifying in one single formulation all the modelling features described so far. This allows
+us to simultaneously tackle all the models at once with a single approach, while generalising
+them at the same time. Indeed, our formulation allows for the interaction of any CARA utility
+(whether risk-neutral or risk averse) with running inventory penalty, terminal execution cost,
+inventory constraints and spread constraints. Further, motivated by practitioners' needs, we
+strongly generalize the intensity shapes to any continuous, decreasing to zero functions, adding
+modelling exibility.4We even allow for the inventory to be unconstrained when no penalties
+are present. (This scenario is considered mainly for the sake of completeness and comparison,
+at almost no extra cost.)
+Secondly, we let the intensities depend on a k-dimensional hidden Markov chain. Follow-
+ing [CEFS16a], we use a weak formulation5to construct a well-dened model (with exogenous
+information) and solve the ltering problem by means of the reference probability approach of
+stochastic ltering [Br e81, Chpt.VI]. The rigorous setting of the model and its full characteri-
+zation are carried out in Section 1, while the ltering problem is solved in Section 2.
+The optimization problem of the MM is then reformulated in terms of the usual state
+variables together with the k-dimensional observable distribution of the Markov chain (Section
+3). At this point, the problem is too involved both analytically and numerically. We proceed by
+showing that, formally, there is an ansatz for the value function that reduces the dimensionality
+of the problem. However, as the verication approach is not valid any more, we explicitly
+nd the guessed decomposition in terms of the value function of a new, diusion-free, problem
+(Theorem 3.1.1). We then characterize the reduced value function as the unique continuous
+viscosity solution of its formally derived equation (Theorem 3.1.4). The latter is done by
+harnessing results of piecewise-deterministic Markov process (PDMPs) [CEFS16a, DF99], as
+rst dened in [Dav84].
+4This is done at the expense of renouncing to uniqueness in the optimal strategy. We also assume the decay
+to be \fast enough" in certain cases.
+5That is, with controlled probability measures.
+3
+
+Thirdly, we solve the idealized problem of a MM with full information, who can observe the
+Markov chain (Section 4). We show that a similar ansatz and the standard approach work out
+in this case. We prove that the MM's value function is a classical solution of its HJB equation
+via a general verication theorem (Theorem 4.4.1) and we recover the well known strategies for
+one regime as particular cases.
+Finally, we compare the optimal strategies under full and partial information through a
+concrete example, by numerical analysis (Section 5). In particular, we show that the optimal
+full information spreads are biased when the exact regime is unknown, and using them becomes
+suboptimal. We interpret the adjustment needed in terms of observable order ow volatility
+and sensitivity of the expected prot to observable regime changes; and we show how this eect
+becomes higher, the longer the waiting time in between orders (leading to higher uncertainty
+for the MM).
+1 Setting and main assumptions
+1.1 Preliminaries on the probability spaces
+We start by setting up our framework in an abstract fashion, deferring the question of existence
+of a model to Proposition 1.4.1, and a characterization of all such models to Proposition 1.4.2.
+As mentioned in the Introduction, we seek to construct a model under a weak formulation, so
+that the information ow remains exogenous (i.e., unaected by the MM's actions).
+LetT >0 be a given nite horizon and (
+ ;F;F= (Ft)0tT) a right-continuous ltered mea-
+surable space with FT=F. Suppose it supports three adapted stochastic processes W;N+;N .
+(More assumptions to be added in the sequel.) Let FW;N+;N = ((Wu;N+
+u;N 
+u:0u
+t)_F 0)0tTbe the natural ltration of these processes enlarged (\completed") by F0and
+dene the set of admissible spreads as
+A:=f:[0;T]
+!(;):isFW;N+;N -predictable and bounded g; (1.1.1)
+where 1< +1are xed constants and (a;b) =R\[a;b] denotes the closure of
+the interval ( a;b) inR, for any 1a<b+1. Note that for = 1 and= +1, the
+admissible spreads are not uniformly bounded. The self-imposed constraints ;for the MM's
+spreads can be taken to be dierent for the bid and the ask if wanted, without any additional
+eort.
+Consider on the former space a family ( P)2A2,= ( ;+), of equivalent probability
+measures such that the sigma algebra generated by their null sets is F0. Note that for each ,
+(
+;F;F;P) is under the usual conditions and F0is the completed trivial sigma algebra. We
+refer to Pas the physical orhistorical probability given the admissible strategy (orcontrol ),
+and we write Efor the expectation under P. We will drop the \ " from the notation when
+there is no room for ambiguity.
+Henceforth, all the processes (resp. properties) considered are supposed to be dened (resp.
+hold) on the space (
+ ;F;F;P) for all2A2, unless otherwise stated. For example, a \Brow-
+nian motion" is a process on [0 ;T]
+ that is an ( F;P)-Brownian motion for all . All
+subltrations are understood to have been augmented to satisfy the usual conditions (which in
+the case of the natural ltrations of Feller processes, it amounts simply to completing them).
+C adl ag versions of the processes are used whenever available.
+1.2 Description of the model
+A market maker in a quote-driven market gives binding bid/ask quotes S ;S+resp. for a
+certain nancial asset, during the time interval [0 ;T]. She receives unitary size market orders6
+6Any constant size would work in the same way, but this convention simplies the notation. See, e.g., [Gu e17]
+for some formulas with arbitrary constant size under full information.
+4
+
+to buy/sell according to counting processes N ;N+starting at 0, with a.s. no common jumps
+and stochastic intensities  ;+resp. (see [Br e81, p.27, Def. D7]). Each intensity at time
+tdepends on the corresponding spread 
+t:= 
+S
+t St
+between the MM's quotes and a
+reference price S.Smay be interpreted, e.g., as an aggregated mid-price or a dealer-to-dealer
+price, depending on the market. We assume Sis a Brownian motion with drift, of the form
+St=s0+t+Wt; (1.2.1)
+whereWis a Wiener process, s0;2Rand0. Note that the MM can fully specify her quote
+S
+tby choosing the spread 
+t, sinceS
+t=St
+t. We assume  ;+2A. In particular, the
+MM chooses her spreads based on the observation of W; N andN+. We refer to FN ;N+;W
+as the observable ltration .
+In addition, the intensities also depend on a hidden Markov chain Ywith state space
+f1;:::;kg, initial distribution 0and deterministic generator matrix Q= (qij
+t)1i;jk. We
+assumeQis a continuous, stable and conservative Q(t)-matrix, i.e.:
+Assumptions 1.2.1 (Generator matrix ).For allt2[0;T]and1ik:
+0qij
+t<+1for all 1jk; j6=i;kX
+j=1qij
+t= 0 andQ2C[0;T]:
+The previous are standing assumptions in the literature of Markov chains and they guarantee in
+particular the existence of a unique (up to evanescence) c adl ag version of Y, and the existence
+of the predictable intensity kernel for its jump measure, as given in (1.3.1). In addition, we
+suppose that
+Yhas a.s. no common jumps with N andN+: (1.2.2)
+In this model, Ytrepresents the market regime at timetand results from the interaction of
+a range of dierent factors, such as market sentiment towards the asset and varying levels of
+competition with other liquidity providers. These eects are almost never explicitly modelled
+in the mathematical literature of market making. To this end, it is natural to assume that Y
+is not directly observable by the MM who can only see N ;N+andW. (As often assumed in
+ltering and control with hidden Markov chain models, the parameters k;Q; and0ofYare
+known to the MM, who needs to model/estimate them in practice.)
+We dene the MM's inventory process
+Nt:=n0+N 
+t N+
+t; (1.2.3)
+and the cash account process
+X ;+
+t :=x0+Zt
+0
+Su++
+u
+dN+
+u Zt
+0
+Su  
+u
+dN 
+u; (1.2.4)
+for some xed initial values n02Zandx02R. The MM's preferences at terminal time are
+represented by a CARA utility function:
+U(c) =1 e c
+;forc2Rand >0;andU0=Id:
+Note that
+FN ;N+=FNandFN ;N+;W=FN;W;
+sinceN ;N+have a.s. no common jumps.
+We shall make some very natural modelling assumptions on the intensities. These generalize
+those in [BL14,Gu e17,GL15] to a context with several market regimes, without the need of any
+conditions on the derivatives or even smoothness.
+5
+
+Assumptions 1.2.2 (Orders intensities ).There exist functions 
+i:(;)!(0;+1)for
+i= 1;:::;k andN2N[f+1gwith Nn0N, such that:
+(i)
+t=;
+t= 
+Yt (
+t) 1fNt <Ngif= ( ;+).
+(ii)
+iis continuous, decreasing (not necessarily strictly) and lim
+!+11f=0g
+i() = 0 if=
++1, for all 1ik.
+Notation. For the sake of readability, we will often write 1
+tinstead of 1fNt <Ng.
+Nis a self-imposed constraint on the MM's inventory (whichever its sign) as originally proposed
+in [GLFT13]. When N=1we are in the unconstrained context, while a nite Neectively
+means that the MM will not buy (resp. sell) whenever Nt =N(resp.Nt = N). In
+practice, the MM could achieve this either by abstaining from quoting or by quoting with an
+excessively large spread that prevents any transaction (i.e., a \stub" or \placeholder quote").7
+Remark 1.2.3 .The last assumption states in particular that the intensities should decrease to
+zero when the spreads grow arbitrarily large. Furthermore, when = 0 we require that they
+decay faster than 1 =. Loosely speaking, this states that for any 0 the \expected" utility of
+the MM's instantaneous margin, z
+i():= i()U(), should vanish for \stub quotes". This is
+a reasonable assumption in practice, as the opposite could lead to unrealistic optimal strategies
+such as continuously quoting \innite spreads".
+Remark. Note that the above intensities are predictable, and since any admissible spreads  ;+
+are bounded,  ;+are in turn bounded. Accordingly, N ;N+;NandXare non-explosive
+(see, e.g., [Br e81, p.27 T8]). Furthermore, for any constant >0 such that  ++, it
+is easy to see that for all p2N; t2[0;T] andr0,
+E[jNtjp]E[(n0+N 
+t+N+
+t)p]E[(n0+M)p];M
+jNtj(r)M
+n0+N 
+t+N+
+t(r)M
+n0+M(r);
+(1.2.5)
+whereMPoisson(T) andM
+Ris the moment generating function of a random variable R.8
+The following are some examples which we shall come to back in Section 4.5, when revis-
+iting the standard assumptions in the literature. We remark that exponential, power-law and
+logistic intensities are the explicit ones most commonly used in the mathematical literature, for
+tractability reasons.
+Examples 1.2.4. 1. 
+i() =a
+ie b
+i, witha
+i;b
+i>0; 1<+1.
+2. 
+i() =a
+i
+1+c
+ieb
+i, witha
+i;b
+i;c
+i>0; 1<+1.
+3. 
+i() =a
+i 
+=2 + arctan( b
+i+c
+i)
+, witha
+i;b
+i>0; c
+i2R; 1<+1.
+4. 
+i() =a
+i(b
+i+c
+i) d
+i, witha
+i;b
+i>0; d
+i> 1f=0g; c
+i2R;maxif c
+i=b
+ig<
+<+1.
+To x ideas, consider Example 1 and let us observe that if Yrepresents decreasing levels
+of competition for the MM, the values of a
+i(resp.b
+i) should increase (resp. decrease) as Y
+increases. The same is true if Yrepresents increasing levels of positive sentiment (or \bullish-
+ness") towards the asset. In practice, Ywill result from the combination of these eects and
+many more.
+7For simplicity and without loss of generality, only the rst alternative is formalized in our model (as done
+in [Gu e17,GL15,GLFT13]) and this is reected in the admissible spreads being real-valued. We could also allow
+for dierent constraints depending on the sign of the inventory, but we refrain from this to simplify the notation.
+8By possibly enlarging the space, one can consider a counting process Zwith no common jumps with N ;N+
+and stochastic intensity    +0. Then the process Z+N +N+is a Poisson with intensity that
+dominatesN++N . The claim follows immediately.
+6
+
+Suppose the MM can hedge any remaining inventory at time Tat the reference price ST
+minus a certain execution cost. Neglecting discounting between 0 and T, we consider the
+optimization problem faced by the MM who tries to maximize the expected utility of her
+terminal penalized prot and loss (P&L),
+sup
+ ;+2AE ;+"
+U
+X ;+
+T+STNT `(NT) 1
+22ZT
+0N2
+tdt#
+; (1.2.6)
+where:
+(i)0. When > 0 we are including in the model a running penalty , as rstly done
+in [CJ15], for the MM to further control her accumulated inventory risk . This is the same
+as subtracting the variance of the mark-to-market value of the inventory, weighted by .
+(ii)`:R![0;+1) represents the nal execution cost and is increasing on [0 ;+1), decreasing
+on ( 1;0] and`(0) = 0. (And usually convex in practice.)
+(iii) IfN= +1, we set== 0`.
+The last restriction on the parameters states that the only case we will consider in which
+the inventory could be arbitrary large (whichever its sign) is that of a completely risk-neutral
+MM with negligible costs. The risk averse case is far more challenging and has not been treated
+in full mathematical detail even in the complete information case (see discussion in [GLFT13]).
+The model given by (iii) is of secondary interest in practice, yet, it will allow us to further
+understand the general problem and methodology and to have a more holistic view at almost
+no extra cost.
+Remark. Previous works in optimal market making do not consider both penalty and CARA
+utility (with  >0) in unison, and instead treat the two families of models separately [Gu e17].
+Besides the obvious interest in unifying the approach and generalizing existing models, allowing
+for > 0 and > 0 simultaneously adds exibility to the risk managing capabilities of the
+MM. Indeed, in [Gu e17] the author derives some HJB-type systems of ODEs for each problem
+with a unique risk aversion parameter  , and then relates them by the introduction of an
+auxiliary parameter 0 . The later is afterwards interpreted as measuring risk aversion
+to non-execution risk only and it is carried forward to the formulae of the \optimal strategies".
+However, such strategies are not shown to result from any particular optimization problem for
+0< <. By looking at the equations of the full information version of our model (Section
+4) with a single market regime, one can immediately see that the equations in [Gu e17] are
+obtained via the reparametrization =and=  . Thus, the formulation in (1.2.6) allows
+us, in particular, to establish the optimality of the strategies in [Gu e17] for any value of the
+non-execution risk aversion and, in general, to dierentiate between aversion to dierent types
+of risks. We can say that, in our model, represents aversion to all types of risks, while the
+penaltyis used to further increase the aversion to risks other than non-execution risk.
+1.3 Jump measures
+It will be useful in the sequel to understand which are the jump measures and intensity kernels
+involved in our model. Let N(dt;dz ) (or simply N) be the jump (or counting) measure of N
+(see def. in [Br e81, p.234] or [JS02, p.69]). We use a similar notation for the jump measures of Y
+and the pair ( Y;N). These are all nite random measures since the processes are non-explosive
+for any+; 2A(see (1.2.5)), and they admit predictable intensity kernels (see [Br e81, p.235
+D2]). Ifmz0(dz) is the Dirac measure at a point z02R, then the ( P;F)-predictable intensity
+kernels ofN;Yand(Y;N)are respectively given by:
+7
+
+;N
+t(dz) =N(Yt ; 
+t;+
+t;Nt ;dz)
+= 
+tm1(dz) ++
+tm 1(dz)
+=  
+Yt ( 
+t) 1fNt <Ngm1(dz) + +
+Yt (+
+t) 1f Nt <Ngm 1(dz);
+Y
+t(dh) =Y(Yt ;dh) =X
+j6=Yt qYt ;j
+tmj Yt (dh)(1.3.1)
+and
+;(Y;N)
+t (dh;dz ) =;N
+t(dz)
+m0(dh) +Y
+t(dh)
+m0(dz): (1.3.2)
+We denote by  N
+(dt;dz ), Y
+(dt;dh ) and (Y;N)
+(dt;dh;dz ) the corresponding ( F;P)-compensated
+measures.
+Remark. Note that equation (1.3.2) is a consequence of assuming that Y;N have a.s. no common
+jumps (which in turn is equivalent to (1.2.2)). Indeed, it is easy to see that Y;N have a.s. no
+common jumps if and only if
+(Y;N)(dt;dh;dz ) =N(dt;dz )
+m0(dh) +Y(dt;dh )
+m0(dz); (1.3.3)
+which implies (1.3.2).
+1.4 Construction and characterization of the model
+In this section, we rigorously construct and characterize our model. On top of the mathematical
+interest in a well dened framework, the results and techniques presented here will be used
+throughout the paper, when tackling both the ltering and the optimization problems. We start
+by proving the existence of a model under our assumptions (Proposition 1.4.1). We construct it
+by means of a reference probability (an overview of which can be found, e.g., in [Br e81, Chpt.VI])
+and, in particular, the Girsanov theorem for point processes.
+For the following proposition, let us consider a ltered probability space (
+ ;F;F;Q) under
+the usual conditions, with F=FTandF0the completed trivial sigma algebra. We refer
+toQas the reference probability . Suppose this space supports a two-dimensional counting
+process (N ;N+) (see def. in [Br e81, Chapt.II]), a Wiener process Wand a Markov chain Y
+with nite state space f1;:::;kg, initial distribution 0and time-dependent generator matrix
+Q= (qij
+t)1i;jksatisfying Assumptions 1.2.1, such that N ;N+;Yverify (1.2.2). We set
+N=N  N+as before and suppose Nhas intensity 1
+t= 1fNt <Ng, whereN2N[f+1g
+is given.9Let 
+i:(;)!Rfori= 1;:::;k be functions under the Assumptions 1.2.2 (ii),for
+given 1< +1andN2N[f+1gwith Nn0N, and deneAas in
+(1.1.1).
+Proposition 1.4.1. Let= ( ;+)2A2and dene the process Zas the stochastic expo-
+nential
+Z:=EZ
+0 
+ 
+Yu ( 
+u) 1 
+dN 
+u  1 
+udu
++ 
++
+Yu (+
+u) 1 
+dN+
+u  1+
+udu
+:Then,
+(i)Zis a strictly positive uniformly integrable (F;Q)-martingale. In particular, EQ[Z
+T] = 1 .
+(ii)Pdened bydP
+dQ=Z
+Tis an equivalent probability measure such that, for (F;P),Nis
+a counting process with intensity 
+t= 
+Yt (
+t) 1
+t,Wis a Wiener process and Yis a
+Markov chain with state space f1;:::;kg, initial distribution 0and generator matrix Q.
+(That is, Assumptions 1.2.1, 1.2.2 and (1.2.2) are all veried.)
+9Such a simpler model can be constructed for example as a product of canonical spaces, with the existence
+of the counting processes with the right intensities proved in [JP82, Thm.24 and Cor.31]. The nite-dimensional
+result has the same proof as in one dimension, starting from independent Poisson measures.
+8
+
+Proof. See Appendix A.
+Reciprocally, suppose we start with a family of ltered probability spaces f(
+;F;F=
+(Ft)0tT;P)g2A2as in Section 1.1, supporting a counting process ( N ;N+) and a Markov
+chainYsatisfying condition (1.2.2), together with a Wiener process W. Suppose also that Y
+has nite state space f1;:::;kg, initial distribution 0and time-dependent generator matrix Q,
+and that our Assumptions 1.2.1 and 1.2.2 are in place. We set N=N  N+as before. We
+would like to characterize any such model in terms of a reference probability as in Proposition
+1.4.1 by an inverse change of measure. However, we only claim the uniqueness of the reference
+probability on FN. We will come back to this result in the sequel.
+Proposition 1.4.2. Let= ( ;+)2A2and dene
+Z:=EZ
+0
+1= 
+Yu ( 
+u) 1 
+dN 
+u  
+udu
++
+1=+
+Yu (+
+u) 1 
+dN+
+u +
+udu
+:Then,
+(i)Zis a strictly positive uniformly integrable (F;P)-martingale. In particular, E[ZT] = 1 .
+(ii)Qdened bydQ
+dP=Z
+Tis a probability measure equivalent to Psuch that, for (F;Q),
+Nis a counting process with intensity 1
+t,Wis a Wiener process and Yis a Markov
+chain with state space f1;:::;kg, initial distribution 0and generator matrix Q. Further-
+more,Y;N;W are independent.
+(iii) If we dene Zas in Lemma 1.4.1 under Q, thenZ= 1=Z(i.e., the two changes of
+measure are inverse of each other).
+(iv) For all ~2A2,Q~QonFN
+T.
+Proof. See Appendix A.
+2 Filtering problem
+Since the MM cannot directly observe all the information in Fbut only FN;W(in particular, she
+cannot observe Y), in order to solve the optimization problem (1.2.6) under partial information
+we want to reduce it rst to an equivalent one under full information. Throughout this section
+we work under Pwith= ( ;+)2A2xed. We sometimes omit from the notation for
+simplicity.
+Let us consider the optional projections
+;i:=o( 1fYt=ig)(P;FN;W);1ik; and := (;1;:::; ;k):10
+That is, is the unique c adl ag version of the conditional distribution of Ygiven the observable
+information: ;i
+t=P(Yt=ijFN;W
+t). It reects the MM's beliefs on the state of the market
+as she updates them through time.
+At any point in time, the MM typically observes orders arriving at rates which do not seem
+to match exactly those of any particular regime, but some average ones instead. We want to
+characterize the observable (that is, the FN;W-) predictable intensities of N ;N+andNin
+terms of . Loosely speaking, the observable intensity of, say N+, is obtained projecting:
+E[+
+tjFW;N
+t] [Br e81, p.32 Comment and Pseudo-Proof of T14]. This yields an average of the
+dierent regime intensities weighted by the observable probabilities of the market states. The
+10For any c adl ag bounded process M(not necessarily adapted) on a ltered probability space ( ;H;H;P)
+satisfying the usual conditions, the optional projection ofMonHis the unique c adl ag processoM(P;H)such
+thatoM(P;H)
+t =EP[MtjHt] a.s. for each t. Its existence is guaranteed by the Optional Projection Theorem (see,
+e.g., [JYC09, p.264] or [Nik06, p.357-358]).
+9
+
+only technical diculty is that of nding a predictable version of such process.o(+) has the
+desired projective property but it is not predictable in general.o(+)t , on the other hand, is
+predictable but does not normally enjoy the projective property. In fact, the process we are
+looking for is \in between" these two.
+Proposition 2.1.1 (Observable intensities ).The(P;FN;W)-predictable intensities of N
+andN, resp., are
+c
+t
+:= 1
+tkX
+i=1;i
+u 
+i(
+u)andb;N
+t(dz):=c 
+t
+m1(dz) +c+
+t
+m 1(dz):
+Notation. We setc(;) =Pk
+i=1i
+i(); thus,c
+t
+= 1
+tc(
+u ;
+u).
+Proof. See Appendix A.
+We give now the ltering (or Kushner-Stratonovich) equations for the observable distribution
+ofY. These are coupled stochastic dierential equations (SDEs) governing the dynamics of .
+They allow the MM to dynamically and eciently update an existing estimate 
+tupon receiving
+new information, without having to recompute it from scratch. In a nutshell, given a side of the
+market and the spread quoted, an order arrival modies the observed probability of regime i
+by a multiplicative factor. This factor is given by the percentage dierence between the orders
+intensity of regime iand the observed one. In between orders however, the probabilities change
+continuously and in a more subtle way, depending not only on the dierent levels of liquidity
+but also on the transition rates between them.
+Notation. We denote by  Rkthe (k 1)-simplex (i.e.,  = f2Rk:0i
+1 for alli, andP
+ii= 1gand by its interior relative to the hyperplane f2Rk:P
+ii= 1g
+(i.e., o=f2:0<i<1 for allig).
+Proposition 2.1.2 (Observable distribution of Y).The process = (;1;:::; ;k)is
+the unique strong solution of the constrained system of SDEs
+di
+t=kX
+j=1
+qji
+tj
+t+ i
+tj
+t
+1 
+t( 
+j  
+i)( 
+t) + 1+
+t(+
+j +
+i)(+
+t)
+dt
++ i
+t 0
+@ 
+i( 
+t)
+c (
+u ; u) 11
+AdN 
+t+ i
+t 0
+@+
+i(+
+t)
+c+(
+u ;+u) 11
+AdN+
+t;(2.1.1)
+subject to 0=0andt2for allt2[0;T]a.s.
+Proof. See Appendix A.
+Remark 2.1.3 .Consider the identication  '[0;1]k 1(resp. '(0;1)k 1) obtained by
+the substitution k= 1 P
+j<kj(where the choice of the k-th coordinate over the rest is
+completely arbitrary). Then the constrained system of SDEs (2.1.1) for (;1:::;;k) becomes
+an \unconstrained" system for (;1:::;;k 1)2[0;1]k 1. Henceforth, we shall use this
+identication whenever convenient.
+We nish this section with a short lemma. It states that the conditional distribution can
+never reach the relative border of the simplex , provided it starts from the relative interior.
+This amounts to saying that all regimes have some positive probability at time zero.
+Lemma 2.1.4. If02, then 
+t2for all 0tTa.s.
+Proof. See Appendix A.
+10
+
+In light of the previous lemma, we will assume from here onwards that
+02; (2.1.2)
+and therefore work with instead of .
+3 Value function and HJB equation
+In this section, we tackle the control problem of the MM with the lter as an additional state
+variable. We dene the MM's value function and we aim to characterize it by means of an HJB
+equation.
+Lett2[0;T]. We consider our model \starting at t" instead of 0. Whenever a process
+is dened from time \ t onwards" (i.e., from time tonwards and decreeing its left-limit value
+att) this implicitly means it is constant on [0 ;t). In particular, we use this convention for all
+integrals (stochastic or not) of the formR
+tand (with a slight abuse of notation) for the processes
+W WtandN N
+t . We work with t instead oftdue to the jumps of the processes N ;N+.
+However, since N ;N+are quasi-left continuous,11for most intended purposes one can drop
+the left limit with no harm . We dene Ft;W;N= ((Wr Wt;Nr Nt :tru_t)_F0)u
+andFt;Nanalogously.
+Lets;x2R; n2Z\[ N;N] and2Rk. The setAtof admissible spreads starting
+attis the set of 2Awhich are independent of FN;W
+t (equivalently, the 2Awhich are Ft;W;N-
+predictable). Consider for each = ( ;+)2A2
+tthe processes St;s;X;t;x;s;Nt;n;;t;n;
+dened pathwise, outside some set A2F 0, by (1.2.1), (1.2.4), (1.2.3), (2.1.1) resp., replacing
+the initial conditions s0;x0;n0;0at time 0 by s;x;n; resp. at time t . We remark that
+Ft;W;N=Ft;W;Nt;n(sinceNt;n=n+N  N+ (N 
+t  N+
+t )) and all the processes dened in
+this section are adapted to this ltration. We further assume there exists a family of \physical"
+probabilities ( P;t;n;)2A2
+tsuch that their null sets generate F0, and for ( P;t;n;;Ft;W;N) it
+holds that W Wtis a Wiener process and N N
+t has predictable intensity c;t;n;, as
+dened in Proposition 2.1.1 in terms of Nt;nand ;t;n;.
+We dene the penalized P&L from ttoT(see (1.2.6) for parameter restrictions) as
+P;s;x;n
+t;T:=X;t;x;s
+T+St;s
+TNt;n
+T `(Nt;n
+T) 1
+22ZT
+t(Nt;n
+u)2du; (3.1.1)
+and the value function of problem (1.2.6) as
+V(t;s;x;n; ):= sup
+2A2
+tE;t;n;
+U
+P;s;x;n
+t;T
+: (3.1.2)
+Our goal is to compute optimal or \close to optimal" strategies.12The Dynamic Programming
+Principle and Ito's Lemma allow us to formally derive (see, e.g., [Bou07]) the Hamilton{Jacobi{
+Bellman (ordynamic programming ) partial-integro dierential equation associated to V:
+0 =vt+vs+1
+22vss+kX
+i;j=1qji
+tjvi+1
+22n2(v 1)
++ 1fn<Ngsup
+ 2(;)nkX
+i;j=1( 
+j  
+i)( )jivi+d 
+ (v)kX
+i=1i 
+i( )o
++ 1f n<Ngsup
++2(;)nkX
+i;j=1(+
+j +
+i)(+)jivi+d+
++(v)kX
+i=1i+
+i(+)o
+;(3.1.3)
+11For example, because they are increasing c adl ag processes admitting continuous compensators for (any one
+of) the physical probabilities [JS02, p.70 Prop.1.19 or p.77 Prop.2.9].
+12By \close to optimal" we mean that for each ">0 there exists a strategy such that the supremum in (3.1.2)
+is attained up to ".
+11
+
+with terminal condition v(T;s;x;n; ) =U(x+sn `(n)), where:
+d
+(v)(t;s;x;n; )
+=v
+t;s;x(s);n1;1Pk
+j=1j
+j() 
+1
+1();:::;k
+k()
+ v(t;s;x;n; );
+and we convene the following:
+Notation. (i) The derivatives with respect to = (1;:::;k) should be understood via the
+identication of Remark 2.1.3. (ii)Although it is not meaningful to evaluate von the inventories
+N1, this only happens in equation (3.1.3) when the corresponding term vanishes. This
+slight abuse of notation can be found throughout previous works and we will be using it as well.
+Equation (3.1.3) can also be seen as a coupled system of PIDEs indexed in n2Z\[ N;N].
+(We will talk about system of equations or simply \equation" indistinctly). Nonlinearity aside,
+(3.1.3) is rather complex, in particular due to being of second order, high-dimensional and
+with derivatives in almost all of these dimensions. Tackling it directly (either analytically or
+numerically) is utterly challenging. Consequently, it has become common practice for optimal
+market making and optimal liquidation models  a la Avellaneda{Stoikov [AS08] to propose an
+ansatz for the solution [AS08, BL14, CDJ17, CJ15, CJR14, FL12, FL13, Gu e17, GL15, GLFT13].
+This approach however, relies heavily on the existence of a classical solution for the resulting
+simplied equation, so that the ansatz is ultimately proved valid by a suitable verication
+theorem. (See Section 4 for more details.) When the simplied equation does not admit (or
+cannot be guaranteed to admit) a classical solution, and a viscosity approach needs to be used
+instead, the previous argument breaks down.
+If we attempted to solve our problem by the standard approach, a plausible ansatz for the
+value function could be
+V(t;s;x;n; ) =U(x+sn+ (t;n; )): (3.1.4)
+Formal substitution yields the following equation for :
+0 =t+n 1
+22n2(+) +kX
+i;j=1qji
+tji
++ 1fn<Ngsup
+ 2(;)nkX
+i;j=1( 
+j  
+i)( )jii+U 
+ +d 
+ ()kX
+i=1i 
+i( )o
++ 1f n<Ngsup
++2(;)nkX
+i;j=1(+
+j +
+i)(+)jii+U 
+++d+
++()kX
+i=1i+
+i(+)o
+;
+(3.1.5)
+with terminal condition (T;n; ) = `(n), where:
+d
+()(t;n; ) =
+t;n1;1Pk
+j=1j
+j() 
+1
+1();:::;k
+k()
+ (t;n; ):
+The new system of PIDEs is of rst order and no longer depends on the variables sandx
+(there is no diusion anymore). This is a considerable simplication; one that will permit
+eective numerical solution in Section 5. But it is not good enough for us to assert existence
+of a classical solution. Notwithstanding, we are able to rigorously prove the decomposition
+(3.1.4) and explicitly nd  as a new \value function" (Theorem 3.1.1). When the control
+12
+
+space is compact, this ultimately allows us to characterize  as the unique solution of the
+terminal condition PIDE (3.1.5) in the viscosity sense (Theorem 3.1.4), further simplied in the
+unconstrained inventory case. These two theorems constitute the main mathematical results of
+this paper. They allow us to safely postulate reasonable candidates for optimal (or -optimal)
+strategies for the MM, i.e., those given by spreads that (at least approximately) realize the
+suprema in (3.1.5).
+Theorem 3.1.1. There exists a unique function :[0;T](Z\[ N;N])!Rsuch that
+the decomposition (3.1.4) holds true. Furthermore, there exists a family of equivalent probability
+measures ~P;t;n;P;t;n;,= ( ;+)2A2
+t, such that
+(i);t;n;is the unique strong solution of (2.1.1) with initial condition (t ;)under ~P;t;n;.
+(ii)Nt;nhas(~P;t;n;;Ft;W;N)-predictable intensity kernel
+~N
+u(dz):=e  
+uc u;t;n;
+m1(dz) +e +
+uc+u;t;n;
+m 1(dz):
+(iii)  =U 1
+	 = 1
+log(1 	)with
+	(t;n; ):= sup
+2~A2
+t~E;t;n;
+U
+~P;n;
+t;T
+; (3.1.6)
+where ~P;n;
+t;T:=RT
+t
+U( 
+u)c u;t;n;
++U(+
+u)c+u;t;n;
++Nt;n
+u 1
+22(+)(Nt;n
+u)2	
+du `(Nt;n
+T)
+and ~At:=f2A:isFt;Nt;n-predictableg.
+Proof. For shortness, we make an abuse of notation and omit ( t;n; ) from the probability
+measures and expectations. Let us start by proving (3.1.4) and nding ( ~P)2A2
+twith the
+desired properties. Using integration by parts we can re-write the penalized P&L (3.1.1) as
+P;s;x;n
+t;T=x+sn+ZT
+t
+Nt;n
+u 1
+22(+)(Nt;n
+u)2
+du `(Nt;n
+T)
++ZT
+tNt;n
+udWu+1
+22ZT
+t(Nt;n
+u)2du+ZT
+t 
+udN 
+u++
+udN+
+u
+=:x+sn+P;n
+t;T;(3.1.7)
+Consider rst the case = 0. The integrals with respect to W;N ;N+all have bounded inte-
+grands (and predictable for N ;N+), except in the case of unconstrained inventory: N= +1
+and== 0`(see (1.2.6)). Regardless, we still have EhRT
+t(Nt;n
+u)2dui
+=RT
+tEh
+(Nt;n
+u)2i
+du<
++1by (1.2.5):Choosing ~P:=Pthe conclusion follows by taking expectation and by Propo-
+sitions 2.1.1 and 2.1.2.
+Consider now  >0. Hence, we are in the case jNjN<+1. We dene
+A:=E
+ Z
+tNt;n
+udWu
+= exp
+ Z
+tNt;n
+udWu 1
+222Z
+t(Nt;n
+u)2du
+:
+By Novikov's condition, Ais a strictly positive uniformly integrable (UI) martingale with
+E[AT] = 1, and therefore denes an equivalent probability measure APviadA
+dP=A
+T.
+Note that the Girsanov{Meyer Theorem. [Pro04, p.132 Thm.35] ensures the Ft;W;N-intensities
+ofN N
+t remain the same when changing to A. Let us set
+B:=E
+ Z
+tU( 
+u)dN u+U(+
+u)dN+u
+=EZ
+t 
+e  
+u 1
+dN u+ 
+e +
+u 1
+dN+u
+;
+13
+
+whereNudenote the corresponding ( P;Ft;W;N)-compensated (or equivalently, ( A;Ft;W;N)-
+compensated) processes. By the same arguments of Propositions 1.4.1 and 1.4.2, Bis a
+strictly positive UI martingale with EA[B
+T] = 1 and denes an equivalent probability measure
+~PAPviad~P
+dA=B
+T, such that (ii)holds true. Note that (i)is also trivially veried
+due to the equivalence of the probability measures.
+Suppose for the time being that 	 is dened as in (3.1.6) but taking supremum over the
+whole set of admissible controls A2
+t~A2
+tinstead. We will see afterwards that this makes no
+dierence. To see (3.1.4), observe that the identity U(a+b) =U(b)e a+U(a) and (3.1.7)
+yieldU(P;s;x;n
+t;T) =U(P;n
+t;T)e (x+sn)+U(x+sn);giving
+V(t;s;x;n; ) = sup
+2A2
+tEh
+U(P;n;
+t;T)i
+e (x+sn)+U(x+sn):
+On the other hand, by the same identity,
+U(x+sn+ ) = (U)e (x+sn)+U(x+sn) = 	e (x+sn)+U(x+sn):
+As a consequence, (3.1.4) is equivalent to the equality 	( t;n; ) = sup2A2
+tEh
+U(P;n
+t;T)i
+. We
+check instead the stronger statement
+E
+exp
+ P;n
+t;T
+=~E
+exp
+ ~P;n
+t;T
+;for all2A2
+t: (3.1.8)
+Using the explicit exponential formula (see (A.1.1)) and by straightforward computations:
+exp
+ P;n
+t;T
+= exp 
+ ZT
+t
+Nt;n
+u 1
+22(+)(Nt;n
+u)2
+du `(Nt;n
+T)!
+A
+Texp 
+ ZT
+t 
+udN 
+u++
+udN+
+u!
+= exp
+ ~P;n
+t;T
+A
+Texp 
+ZT
+t
+U( 
+u)c u;t;n;
++U(+
+u)c+u;t;n;	
+du!
+Y
+tuT:
+N 
+u6=0exp
+  
+uY
+tuT:
+N+
+u6=0exp
+ +
+u
+= exp
+ ~P;n
+t;T
+A
+TB
+T;
+which yields (3.1.8) after taking P-expectation.
+It remains to see that
+	(t;n; ):= sup
+2A2
+t~E
+U
+~P;n;
+t;T
+= sup
+2~A2
+t~E
+U
+~P;n;
+t;T
+=:~	(t;n; ):
+Clearly 	~	. Let us check 	 ~	. As done in Proposition 1.4.2 we can dene a family
+of \reference" equivalent probability measures ~Q~P,2A2
+t, such that for ( ~Q;Ft;W;N) it
+holds:W Wtis a Wiener process independent of the counting process ( N  N 
+t ;N+ N+
+t )
+andN N
+t has predictable intensity 1;t;n
+u := 1fNt;n
+u <Ng(in particular, its law does not
+depend on). Furthermore, the inverse change of measure is given by d~P=d~Q=~Z
+Twith
+~Z:=EZ
+t c (;t;n;
+u ; 
+u) 1 
+dN 
+u  1 ;t;n
+udu
++ c+(;t;n;
+u ;+
+u) 1 
+dN+
+u  1+;t;n
+udu
+:
+14
+
+Let us x2A2
+t. Denote byD=D([t;T];R) the Skorokhod space of c adl ag functions with
+its usual sigma algebra and by PW;PNthe laws (or pushforward measures) induced on Dby
+W Wt;Nt;nresp. when starting from Q. These laws do not depend on and characterize the
+joint law of ( W Wt;Nt;n) onD2asPW
+PN, due to the independence of the two processes.
+SinceisFt;W;N-predictable, by a monotone class argument one can show there exists a jointly
+measurable process f:[t;T]D2!Rsuch thatu=fu(W Wt;Nt;n) and for PW-almost every
+w2D, the process ~ u:=fu(w;Nt;n) is in ~A2
+t. Note also that we can write ~Z
+TU
+~P;n;
+t;T
+=
+g(;Nt;n) =g(f(W Wt;Nt;n);Nt;n) for some function g. By Fubini's theorem,
+~E
+U
+~P;n;
+t;T
+=~EQ
+~Z
+TU
+~P;n;
+t;T
+=Z
+EPN
+g(f(w;);)
+dPW(w)Z
+~	dPW(w) =~	:
+Since2A2
+twas arbitrary, we conclude that 	 = ~	.
+Just as it occurs under full information (see Section 4), for a fully risk-neutral MM with
+negligible costs (i.e. N= +1; == 0`),  can be further decomposed. Note, from
+their denition, that in this case c;t;n;and ;t;n;do not depend on n. As it was proved in
+Theorem 3.1.1, when = 0 the family ( ~P;t;n) can be taken as the original physical probabilities,
+and these do not depend on neither. The following corollary is now immediate.
+Corollary 3.1.2. IfN= +1and== 0`then
+V(t;s;x;n; ) =x+sn+n(T t) + (t;);
+with (t;) = sup2~A2
+tEt;RT
+t
+ 
+uc u;t;
+++
+uc+u;t;
++(c u;t;
+ c+u;t;
+)	
+du
+:
+In the context of the previous corollary, formal substitution in (3.1.3) or (3.1.5) yields the
+following PIDE for :
+0 =t+kX
+i;j=1qji
+tji
++ sup
+ 2(;)nkX
+i;j=1( 
+j  
+i)( )jii+ 
+ +(T t) +d 
+ ()kX
+i=1i 
+i( )o
++ sup
++2(;)nkX
+i;j=1(+
+j +
+i)(+)jii+ 
++ (T t) +d+
++()kX
+i=1i+
+i(+)o
+;(3.1.9)
+with terminal condition (T;) = 0, where:
+d
+()(t;) =
+t;1Pk
+j=1j
+j() 
+1
+1();:::;k
+k()
+ (t;):
+Remark 3.1.3 .Besides its theoretical motivation, Theorem 3.1.1 is interesting in itself. It
+enables the use of probabilistic and PDMPs numerical techniques when the dimension of the
+problem renders PDEs methods prohibitive. Furthermore, as readily seen in the proof, the
+decomposition of the expected P&L utility holds true for any admissible strategy. This means,
+in particular, that one can eciently simulate the proceeds of any strategy without the need to
+simulate the diusive state variables (see Section 5.2).
+We now want to prove that  (resp. ) is the unique continuous viscosity solution of the
+terminal condition PIDE (3.1.5) (resp. (3.1.9)). (See, e.g., [Son88, Def.2.1] for the relevant
+denition, or more in general [DF99, Def.7.3], recalling that in our case we have no boundary
+15
+
+conditions other than that at terminal time.) A complication inevitably arises, as classical
+viscosity techniques [Bou07,FS06,S09] cannot be applied directly to weak formulation models
+such as ours. However, the decomposition of Theorem 3.1.1 (resp. Corollary 3.1.2) not only
+reduces the dimensionality of the problem, but also states that the MM may neglect the diusion
+component of the state process altogether, focusing solely on the time-space state variable
+(u;Nt;n;;t;n;) (resp. (u;;t;n;)). This is a PDMP as introduced in [Dav84] (detailed
+treatments also found in [BR11, Dav93]). Using results from PDMPs theory, our continuous-
+time problem is identied with a control problem for a discrete-time Markov decision model, as
+in [BR09, BR10, BR11, CEFS16a], and linked again with viscosity solutions of HJB PIDEs as
+in [CEFS16a,DF99].
+An inevitable drawback is that the PDMPs approach relies on the use of the so-called
+randomized (orrelaxed ) controls and requires the control space to be compact. Hence, for the
+following theorem we will assume  1<<<+1. Assuming a uniform lower constraint
+> 1 is hardly a problem. On the contrary, = 0 (or even some small positive number)
+is the most meaningful in practice, as negative spreads imply the MM is willing to oer her
+clients better prices than the reference price S. (= 1 is motivated in the literature by
+mathematical convenience rather than modelling accuracy.) A uniform upper bound <+1,
+on the other hand, is harder to assess a priori.
+Fortunately, in most situations encountered in practice, the unconstrained optimization will
+yield bounded optimal spreads nonetheless, and the MM can dispense with ;if she wishes
+to do so (see Section 5 for an example).
+Theorem 3.1.4. Assume 1< < <1. ForN<1(resp.N= +1and==
+0`), let (resp. ) be as in Theorem 3.1.1 (resp. Corollary 3.1.2). Then (resp. ) is
+the unique continuous viscosity solution of the terminal condition PIDE (3.1.5) (resp. (3.1.9)).
+Proof. See Appendix A.
+4 Full information
+In this section we consider the idealized case of a MM with full information. We assume
+the MM has inside information in such a way that she can observe the full ltration F, and
+in particular she can observe Y. For example, if Yrepresents dierent levels of competition
+amongst liquidity providers, this would practically mean the MM has information regarding
+her competitors' quotes. We will see that in this case the value function turns out to be a
+regular, classical solution, of its HJB equation. Afterwards, we will compare the results with
+those obtained in the more realistic setting of partial information.
+4.1 Dimensionality reduction and the general system of ODEs
+We consider problem (1.2.6) but under full information, with the set of admissible spreads:
+U:=f:[0;T]!(;):isF-predictable and bounded from below g:
+Note that in this section, and when = +1, we do not assume upper-boundedness of the
+spreads. Let t2[0;T]; s;x2Rand (n;i)2I := 
+Z\[ N;N]
+f1;:::;kg. Consider
+the processes St;s;X;t;x;s;Nt;n;P;s;x;nas dened in Section 3 and Yt;ia Markov chain with
+deterministic generator matrix Q, state spacef1;:::;kgand such that Yt;i
+t =i. We assume
+the physical probabilities P;t;n;iare dened for every 2U2and that Assumptions 1.2.1, 1.2.2
+and (1.2.2) (starting at time t ) are still in place. The value function in this case is
+V(t;s;x;n;i ):= sup
+2U2
+tEt;n;ih
+U 
+P;s;x;n
+t;Ti
+; (4.1.1)
+16
+
+By means of the Dynamic Programming Principle and Ito's Lemma one can formally derive
+the following HJB PIDE for V:
+0 =vt(t;s;x;n;i ) +vs(t;s;x;n;i ) +1
+22vss(t;s;x;n;i )
++1
+22n2(v(t;s;x;n;i ) 1) +kX
+j=1qij
+tv(t;s;x;n;j )
++ 1fn<Ngsup
+ 2(;) 
+i( )
+v 
+t;s;x (s  );n+ 1;i
+ v(t;s;x;n;i )
++ 1f n<Ngsup
++2(;)+
+i(+)
+v 
+t;s;x + (s++);n 1;i
+ v(t;s;x;n;i )
+;(4.1.2)
+with terminal condition v(T;s;x;n;i ) =U(x+sn `(n)).
+In this new context, instead of formally proving a decomposition of Vas in Theorem 3.1.1,
+it is more straightforward to propose an ansatz and ultimately prove it valid with a verication
+theorem. (This is the standard approach used in the Avellaneda{Stoikov framework.) Let us
+consider an ansatz for the value function analogous to those used for the one regime case:
+V(t;s;x;n;i ) =U(x+sn+ (t;n;i ));
+for some function  :[0;T]I! R,C1in time. Substituting in (4.1.2) and using Assumptions
+1.2.1, we see that  must satisfy a system of ODEs indexed in ( n;i)2I:
+0 =t(t;n;i ) +n 1
+22n2(+) +X
+j6=iqij
+tU 
+(t;n;j ) (t;n;i )
++ 1fn<NgH 
+i 
+(t;n+ 1;i) (t;n;i )
++ 1f n<NgH+
+i 
+(t;n 1;i) (t;n;i )
+;(4.1.3)
+with terminal condition (T;n;i ) = `(n), where:
+1.H
+i(d):= sup2(;)h
+i(;d), ford2R.
+2.h
+i(;d):= 
+i()U(+d), ford2R; 2(;).
+The original problem is simplied in this way, both by the dimension of the state variable
+and by the complexity of the equations, provided we can show that problem (4.1.3) admits a
+solution. With this aim in mind, let us prove rst the following property of the Hamiltonian
+functionsH
+1;:::;H
+k.
+Lemma 4.1.1. For all 1ik, it holds:
+(i) For each compact KR, there exists [a;b](;)such thatH
+i(d) = max2[a;b]h
+i(;d),
+for alld2K.
+(ii)H
+iis locally Lipschitz.
+Proof. Fix 1ikand letKRbe a compact set. We verify rst that (i)is a consequence
+of Assumptions 1.2.2. Let C > 0 such thatjdjCfor alld2K. If= 1, then we can
+take anya < minf C;gsinceh
+i(;d)< h
+i(a;d) for all < a andd2K. On the other
+hand, if= +1, take some c>maxf;2Cg. It holds that h
+i(c;d)
+i(c)U(C) =:">0
+and we can choose b>c such thath
+i(;d)h
+i(;C)<"for allbandd2K. Replacing
+supremum by maximum is now immediate due to the continuity of h
+i(;d) on [a;b] for alld.
+(ii)is routinely veried using that the family fh
+i(;)g2[a;b]is equi-Lipschitz on K.
+We want to prove now that the Cauchy problem (4.1.3) admits a unique global classical
+solutionwhich isC1in time. To this purpose, we will treat the cases of the nite system
+(N<1) and innite system ( N=1) of equations separately.
+17
+
+4.2 Constrained inventory ODEs
+ForN<1we are dealing with a nite system of ODEs. We know that under certain
+regularity conditions the Cauchy problem (4.1.3) is guaranteed to have a classical solution on
+some neighbourhood ( ;T][0;T] ofT. Nonetheless, it is not always the case that such a
+local solution can be extended to a global one on [0 ;T]. Following [Gu e17, GL15], we start by
+proving a comparison principle for (4.1.3) that will allow us, in particular, to show the existence
+of a global solution. The argument used is standard for comparison principles of HJB-type
+equations.
+Proposition 4.2.1 (Comparison Principle ).LetI[0;T]be an interval containing Tand
+let;:II ! Rbe classical ( C1with respect to time) super- and sub-solutions resp. of
+(4.1.3). That is,
+0 t(t;n;i ) n+1
+22n2(+) X
+j6=iqij
+tU 
+(t;n;j ) (t;n;i )
+  1fn<NgH 
+i 
+(t;n+ 1;i) (t;n;i )
+  1f n<NgH+
+i 
+(t;n 1;i) (t;n;i )
+;(4.2.1)
+0 t(t;n;i ) n+1
+22n2(+) X
+j6=iqij
+tU 
+(t;n;j ) (t;n;i )
+  1fn<NgH 
+i 
+(t;n+ 1;i) (t;n;i )
+  1f n<NgH+
+i 
+(t;n 1;i) (t;n;i )(4.2.2)
+and
+(T;;) `(T;;): (4.2.3)
+Then
+:
+Proof. See Appendix A.
+We can now prove the existence and uniqueness of a classical global solution to the Cauchy
+problem (4.1.3).
+Theorem 4.2.2. There exists a unique :[0;T]I ! R,C1in time, which (classically)
+solves the Cauchy problem (4.1.3).
+Proof. For each 1ik, Lemma 4.1.1 tells us that H
+i:R!Ris locally Lipschitz. We also
+assumedQ:[0;T]!Rkkcontinuous (Assumptions 1.2.1). Hence, by the Cauchy-Lipschitz
+Theorem, the terminal condition system of ODEs (4.1.3) admits a unique C1local solution
+((;n;i))(n;i)2I, dened on some maximal interval I[0;T] containing T.
+Suppose that I([0;T]. ThenI= (;T] for some 0 < T andk(t)k!1 ast&.
+We claim that  is actually bounded, resulting in a contradiction. Indeed, take
+K= max
+(i;n)2In 1
+22n2(+) + 1fn<NgH 
+i(0) + 1f n<NgH+
+i(0)
+and
+K=`(N);
+and dene:II! Rby(t;n;i ) =K(T t) and:=  K. Then(resp.) is a super-
+(resp. sub-) solution of the Cauchy problem (4.1.3). By the Comparison Principle (4.2.1),
+ KT KKT;
+proving that  is bounded.
+18
+
+4.3 Unconstrained inventory ODEs
+We consider now N= +1, for which (4.1.3) becomes an innite system of ODEs. Recall that
+in this case we assumed == 0`, i.e., the MM is fully risk-neutral and has negligible
+costs. This allows us to further reduce the dimensionality of the state variable by the additional
+ansatz
+(t;n;i ) =n(T t) + i(t); (4.3.1)
+for some  = ( i)k
+i=12C1([0;T];Rk). Substituting in (4.1.3), we get that  must solve the
+nite linear system of ODEs
+(
+0(t) = Q(t)(t) +b(t)
+(T) = 0;(4.3.2)
+withbi(t) = H 
+i((T t)) H+
+i( (T t)); i= 1;:::;k . By continuity of Qandb(see
+Lemma 4.1.1), the previous system is known to have a unique global solution  2C1([0;T];Rk)
+which can be computed by the variation of parameters method. Straightforward verication
+now gives the following:
+Proposition 4.3.1. Let2C1([0;T];Rk)be the unique solution of (4.3.2). Then :[0;T]
+I!Rsuch that (t;n;i ) =n(T t) + i(t), is the unique, C1in time, (classical) solution
+of the Cauchy problem (4.1.3) with N= +1and== 0`.
+4.4 General Verication Theorem
+We give now the complete solution for the general model under full information. For the next
+theorem we note that given the function  dened in Theorem 4.2.2 for N<+1(resp.
+Proposition 4.3.1 for N= +1and== 0`) the dierence or \jump" terms of equation
+(4.1.3) are bounded by continuity. That is, ( t;n1;i) (t;n;i ) is bounded on [0 ;T]Ifor
+N<+1(resp. (t;n1;i) (t;n;i ) =(T t) is bounded on [0 ;T]).
+Theorem 4.4.1 (Verication Theorem ).Letbe as in Theorem 4.2.2 for N<+1and
+as in Proposition 4.3.1 for N= +1and== 0`. Then the value function in (4.1.1) is
+V(t;s;x;n;i ) =U(x+sn+ (t;n;i )):
+Furthermore, given C > 0such thatj(t;n1;i) (t;n;i )jCfor all (t;n;i )2[0;T]I
+with Nn1N, there exist Borel measurable functions 
+1;:::;
+k:[ C;C]!(;)
+such that
+i(d)2arg max2(;)h
+i(;d)for alld2[ C;C],1ik; and for any such
+functions, the strategy (+u; u), with
+u:=
+Yt;i
+u 
+(u;Nt;n
+u 1;Yt;i
+u ) (u;Nt;n
+u ;Yt;i
+u )
+;
+is optimal.
+Notation. Note that we make a slight abuse of notation, writing 
+ifor the Borel functions in
+the theorem and ( u) for the spread processes.
+Proof. Let 1ik. We check rst that we can choose a maximizer of h
+i(;d) in a measurable
+way with respect to d. Lemma 4.1.1 tells us that there exists [ ai;bi](;) such that
+h
+i(;d) attains its maximum in [ ai;bi] for alld2[ C;C]. Due to Assumptions 1.2.2 (ii),
+h
+iis continuous and, in particular, a Carath eodory function [AB06, Def.4.50]. Thus, the
+Measurable Maximum Theorem [AB06, Thm.18.19] guarantees the existence of a Borel selector
+19
+
+of the arg max, 
+i:[ C;C]![ai;bi](;). (Note that the weak measurability assumption
+is trivially veried in this case.)
+From here onwards, let 
+1;:::;
+k:[ C;C]!(;) be some Borel selectors as above.
+By Lemma 4.1.1 again, these functions must be bounded from below, and the spread processes
+(u) dened as in the theorem are clearly admissible.
+We dene now ~V(t;s;x;n;i ):=U(x+ns+(t;n;i )) and we want to show that ~V=V. Let
+us x the initial time and values, t2[0;T]; s;x2Rand (n;i)2I, and consider an arbitrary
+strategy= ( 
+u;+
+u)2U2
+t. For shortness, we omit these initial conditions and strategy from the
+notation of the processes and the expectation. We denote by S:=fj l:1l;jk; l6=jg,
+the set of jump heights of Y, and
+Rt;v:= 1
+22Zv
+tN2
+udu; Z t;v:= exp 
+ Rt;v
+:
+By the identity U(a+b) =U(a)e b+U(b), we can rewrite the utility of the MM's penalized
+P&L as
+U 
+Pt;T
+=U 
+XT+STNT `(NT)
+Zt;T+U 
+Rt;T
+=~V 
+T;ST;XT;NT;YT
+Zt;T+U 
+Rt;T
+:(4.4.1)
+Using integration by parts and Ito's Lemma (recalling (1.2.2)), we re-express the last two terms
+as
+U 
+Rt;T
+= 1
+22ZT
+tZt;uN2
+udu
+and
+~V 
+T;ST;XT;NT;YT
+Zt;T
+=~V(t;s;x;n;i ) +ZT
+t~V(u;Su;Xu;Nu;Yu)dZt;u+ZT
+tZt;ud~V(u;Su;Xu;Nu;Yu)
+=~V(t;s;x;n;i ) +1
+22ZT
+tV(u;Su;Xu;Nu;Yu)Zt;uN2
+udu+ZT
+tZt;u~Vt(u;Su;Xu ;Nu ;Yu )du
++ZT
+tZt;u~Vs(u;Su;Xu ;Nu ;Yu )du+ZT
+tZt;u~Vs(u;Su;Xu ;Nu ;Yu )dWu
++1
+22ZT
+tZt;u~Vss(u;Su;Xu ;Nu ;Yu )du
++ZT
+tZt;u ~V(u;Su;Xu  (Su  
+u);Nu + 1;Yu ) ~V(u;Su;Xu ;Nu ;Yu )
+dN 
+u
++ZT
+tZt;u ~V(u;Su;Xu +Su++
+u;Nu  1;Yu ) ~V(u;Su;Xu ;Nu ;Yu )
+dN+
+u
++ZT
+tZt;uZ
+S ~V(u;Su;Xu ;Nu ;Yu +h) ~V(u;Su;Xu ;Nu ;Yu )
+Y(dt;dh );
+whereYis the jump measure of Y. Substituting in (4.4.1),
+20
+
+U 
+Pt;T
+=~V(t;s;x;n;i ) +ZT
+tZt;u~Vs(u;Su;Xu ;Nu ;Yu )dWu
++ZT
+tZt;un
+~Vt(u;Su;Xu ;Nu ;Yu )du+~Vs(u;Su;Xu ;Nu ;Yu )du
++1
+22~Vss(u;Su;Xu ;Nu ;Yu )du+1
+22N2
+u 
+V(u;Su;Xu;Nu;Yu) 1
+du
++Z
+S ~V(u;Su;Xu ;Nu ;Yu +h) ~V(u;Su;Xu ;Nu ;Yu )
+Y(dt;dh )
++ ~V(u;Su;Xu  (Su  
+u);Nu + 1;Yu ) ~V(u;Su;Xu ;Nu ;Yu )
+dN 
+u
++ ~V(u;Su;Xu +Su++
+u;Nu  1;Yu ) ~V(u;Su;Xu ;Nu ;Yu )
+dN+
+uo
+:(4.4.2)
+Next, we want to verify that the processRv
+tZt;u~Vs(u;Su;Xu ;Nu ;Yu )dWu
+tvTis a zero
+mean martingale. Since Zt;uis bounded (either N<1or= 0) it suces to check
+ZT
+tEh
+~Vs(u;Su;Xu;Nu;Yu)2i
+du< +1: (4.4.3)
+If= 0,
+~Vs(u;Su;Xu;Nu;Yu)2=Nu2
+and (4.4.3) is a consequence of (1.2.5).
+If6= 0 (hence N<1), letCbe a lower bound for (  
+u) and (+
+u). Integration by parts and
+H older inequality yield
+Eh
+~Vs(u;Su;Xu;Nu;Yu)2i
+=2Eh
+exp 
+ 2 
+Xu+SuNu+(u;Nu;Yu)
+N2
+ui
+=2exp( 2(x+sn))
+E
+exp
+ 2Zu
+t 
+wdN 
+w++
+wdN+
+w+Nwdw+NwdWw+(w;Nw;Yw)
+N2
+u
+2N2exp
+2 
+x+sn+N(T t) +kkL1([t;T]I)+ 22N2(T t)
+E
+exp
+ 4C 
+N 
+T+N+
+T N 
+t  N+
+t 1
+2
+E"
+exp
+ 4ZT
+tNudWu 822ZT
+tN2
+udu#1
+2
+and (4.4.3) is again consequence of (1.2.5) and Novikov's condition (trivially satised).
+In the same way, recalling that ( Zt;u) is bounded, ( 
+u) is bounded from below and that Qis
+bounded by continuity, one can check that
+ZT
+tEh
+Zt;u~V(u;Su;Xu (Su
+u);Nu 1;Yu ) ~V(u;Su;Xu ;Nu ;Yu )
+ui
+du< +1
+and
+ZT
+tEh
+Zt;uX
+j6=Yu qYu ;j
+t~V(u;Su;Xu ;Nu ;j) ~V(u;Su;Xu ;Nu ;Yu )i
+du< +1:
+Taking expectation in (4.4.2), the Brownian term vanishes and integration with respect to
+dN ;dN+anddYis replaced by integration with respect to their dual predictable projections
+(see, e.g., [Br e81, p.27 T8 and p.235 C4]). That is,
+21
+
+Eh
+U 
+Pt;Ti
+=~V(t;s;x;n;i ) +ZT
+tEh
+Zt;un
+~Vt(u;Su;Xu ;Nu ;Yu )
++~Vs(u;Su;Xu ;Nu ;Yu ) +1
+22~Vss(u;Su;Xu ;Nu ;Yu )
++1
+22N2
+u 
+~V(u;Su;Xu;Nu;Yu) 1
++kX
+j=1qYu j
+t~V(u;Su;Xu ;Nu ;j)
++ 1 
+u 
+Yu ( 
+u) ~V(u;Su;Xu  (Su  
+u);Nu + 1;Yu ) ~V(u;Su;Xu ;Nu ;Yu )
++ 1+
+u+
+Yu (+
+u) ~V(u;Su;Xu +Su++
+u;Nu  1;Yu ) ~V(u;Su;Xu ;Nu ;Yu )oi
+du
+~V(t;s;x;n;i );
+as~Vsolves (4.1.2), with the equality attained for (  
+u) = ( u) and (+
+u) = (+u) by denition.
+We conclude that V=~Vand that the pair (  u);(+u) is optimal.
+Remark. ForN<1, since the MM will not buy (resp. sell) whenever ( Nu ) hitsN(resp.
+ N), the value of (  u) (resp. (+u)) at these stopping times is essentially irrelevant. From a
+strict mathematical perspective, the only constraint is that whichever the value we choose, the
+process needs to remain admissible.
+4.5 Computing the optimal spreads: some particular cases
+We have shown in Theorem 4.4.1 that the optimal spreads for the full information problem
+(4.1.1) can be computed in feedback form in terms of ( t;n;i ) = (t;Nt ;Yt ) at each time
+t2[0;T]. Practically, this means nding  (typically, numerically) that solves the terminal
+condition system of ODEs (4.1.3), and nding the spreads by maximization:
+(t;n;i )2arg max
+2(;)
+i()U 
++ (t;n1;i) (t;n;i )
+: (4.5.1)
+(See the proof of Lemma 4.1.1 to see how to reduce the maximization to a compact domain in
+the cases of = 1 or= +1.) The functions in (4.5.1) may admit multiple maximizers
+in general. In [BL14, Gu e17, GL15] stronger assumptions are imposed on the orders intensities
+which guarantee, in particular, the uniqueness of the maximizers. We now extend these assump-
+tions to our context and give the corresponding characterization of the spreads. Henceforth,
+Assumption 1.2.2 (ii)is replaced by the following:
+Assumptions 4.5.1. 
+i2C2 
+(;)
+;
+i0<0and
+i
+i00<c(
+i0)2for some 0<c< 2,
+for all 1ik.13
+Remark. The intensity functions of Examples 1.2.4 1, 2 and 3 all verify these stronger assump-
+tions, while Example 4 only does so for d
+i>1. As a matter of fact, by solving the dierential
+inequality in Assumptions 4.5.1, one sees that any 
+iwithin this new framework has a strict
+upper bound of the form of Example 4. In particular, for = +1, lim!+1
+i() = 0 is
+necessarily satised.
+Under Assumptions 4.5.1, the maximization of (4.5.1) (for xed ( t;n;i )) can be replaced
+essentially by solving a contractive xed point equation and ooring and capping the results at
+13Lateral derivatives are considered on the domain border. The strict inequality c<2 is needed when = 0
+and spreads are unconstrained.
+22
+
+andrespectively. To make this precise, even when the intensity functions are not dened
+beyond (;), let us set
+d
+i:=8
+><
+>: U 1
+
+
+i()
+
+i0()
+ if> 1
++1 if= 1;d
+i:=8
+><
+>: U 1
+
+
+i()
+
+i0()
+ if<+1
+ 1 if= +1:
+The following result shows how, up to constraints, the optimal spreads are given by a rst term
+that maximizes the \expected" utility of the MM's instantaneous margin (see Remark 1.2.3),
+plus an additional risk adjustment taking into account the inventory held and the prospect of
+the market shifting. Note how the rst term depends on 
+i0=
+i, the percentage sensitivity of
+the liquidity to spread changes.
+Proposition 4.5.2. Under Assumptions 4.5.1, the functions 
+1;:::;
+kof Theorem 4.4.1 are
+uniquely characterized by
+
+i(d) =ifd<d
+i;
+i(d) =ifd>d
+i (4.5.2)
+and ifd2(d
+i;d
+i), then
+i(d)is the unique solution of the xed point equation
+
+i(d) = U 1
+0
+@
+i(
+i(d))
+
+i0(
+i(d))1
+A d: (4.5.3)
+Additionally, the Hamiltonians of equation (4.1.3) can be expressed as
+H
+i(d) =8
+>>><
+>>>:h
+i(;d) ifdd
+i
+ 
+i2(c(d))
+
+i0(c(d)) 
+i(c(d))ifd
+i<d<d
+i
+h
+i(;d) ifdd
+i:
+Proof. For each 1ik, dene
+f
+i(;d) =+U 1
+ 
+
+i()
+
+i0()!
++d;with2(;); d2R:
+By Assumptions 4.5.1 and straightforward computations (see computations, e.g., in [Gu e17,
+Lemma 3.1]), one veries that sgn @h
+i
+@
+= sgn(f
+i) andf
+iis strictly increasing on each
+variable.14It follows that for any d < d
+iand < (resp.d > d
+iand > ),f
+i(;d)<
+f
+i(;d
+i) = 0 (resp. f
+i(;d)>f
+i(;d
+i) = 0), which proves (4.5.2).
+In the same way, if d2(d
+i;d
+i) and 1< < <+1, thenf
+i(;d)<0 and
+f
+i(;d)>0. Hence, the continuity of f
+i(;d) implies (4.5.3) (the uniqueness of the solution
+being due to the strict monotonicity of f
+i(;d)). The cases of unconstrained spreads are proved
+as in [Gu e17].
+Lastly, the cases d=d
+i> 1 andd=d
+i<+1follow in the same manner; and the
+new expressions for the Hamiltonians are immediate, putting H
+i(d) =h
+i 
+
+i(d);d
+.
+As done in [Gu e17, Lemma 3.1], (4.5.3) can be replaced by the explicit formula
+
+i(d) = (
+i) 1
+H
+i(d) H
+i0(d)
+;
+14sgn denotes the sign function, with sgn(0) := 0.
+23
+
+but the computation of (
+i) 1,H
+iandH
+i0still has to be carried out numerically, in general.
+We state now a few simplications that arise in some particular cases, i.e., when the intensities
+are exponential or when N=1,== 0`. These are all derived by straightforward
+substitution. We refer to [Gu e17, Sect.4] for some asymptotic approximations when t<<T in
+the one regime case, with unconstrained spreads and N<1.
+Corollary 4.5.3. IfN= +1and== 0`, then
+(t;i) =if(T t)<d
+i;
+i(d) =if(T t)>d
+i; (4.5.4)
+and if(T t)2(d
+i;d
+i), then(t;i)is the unique solution of the xed point equation
+(t;i) = 
+i((t;i))
+
+i0((t;i))(T t): (4.5.5)
+If additionally 
+i() =a
+ie b
+i, witha
+i;b
+i>0for each 1ik, then
+(t;i) =_ 
+1
+b
+i(T t)!
+^:
+In other words, if N=1and== 0`, then solving (4.1.3) is no longer necessary
+and one only needs to solve the xed point equations (4.5.5). Further, the MM's spreads do not
+depend on n. This is to be expected, since in this case she is neutral to all types of inventory
+risks and the terminal execution cost is neglected. However, she does need to re-adjust for
+changes in the regime as these impact on her probability of getting orders. If additionally, the
+orders intensities are exponential, then the spreads are computed straightforwardly avoiding
+the need of any numerical scheme. Note also how this simple model makes evident a second
+component of the optimal spreads through equation (4.5.5): a drift adjustment by which the
+MM takes into account the overall tendency of the asset's price.
+Now we look at the results obtained for exponential intensities in general, and in particular
+forN<+1. Equation (4.5.3) becomes an explicit formula in this case, as the percentage
+liquidity sensitivities, 
+i0=
+i, are constant.
+Corollary 4.5.4. If
+i() =a
+ie b
+i, witha
+i;b
+i>0for each 1ik, then
+(t;n;i ) =_
+ U 1
+
+ 1=b
+i
+  
+(t;n1;i) (t;n;i )
+^:
+This means that for exponential intensities in general, it is no longer necessary to solve any
+xed point equations but only the system of ODEs (4.1.3). The latter still needs to be solved
+numerically in general. (Alternatively, see [Gu e17] for some asymptotic approximations.)
+Remark. Apart from the case N= +1; == 0`, a noteworthy scenario in which
+(4.1.3) can be further simplied to a linear system of ODEs (with constant coecients) is when
+k= 1; N<+1; = 1; = +1and () =ae b, witha;b > 0. The reduction is
+achieved via the transformation ( t;n) =1
+blog 	(t;n):See [GLFT13] for more details.
+5 Numerical analysis
+In this section we present our numerical results, focusing on the dierence in optimal behaviours
+between the partial and full information frameworks, and the intuition behind the lter. To
+exemplify our ndings in a concrete manner, while keeping the presentation as simple as possible,
+we will assume throughout this section that:
+24
+
+The MM has risk aversion parameter = 0.
+There are only two possible states: state 1 represents a \bad" regime with low liquidity
+taken by clients, and state 2 a \good" regime with high liquidity.
+The transition rate matrix Qis constant.
+The intensities are symmetric, proportional and exponential, i.e., 
+1() =  1() =ae b
+and 
+2() =  2() =m1();witha;b> 0; m> 1.
+The latter assumption allows us to perform the optimizations in equation (3.1.5) analytically.
+Practically, proportional intensities mean that while there is more active trading on the good
+regime, the way in which the clients react to movements in the spreads remains unaected. As
+in [CJ15], we will allow for the three type of penalties to manage inventory risk: constraints
+on the maximum long and short positions, accumulated inventory penalty and a quadratic
+(possibly negligible) terminal penalty (or cost) for the MM. That is,
+N<+1; 0 and`(n) =cn2, for somec0.
+Let us write :=1for the conditional probability of being in the bad regime given the
+observable information. Note that is a scalar in this section, since 2= 1 1neglects the
+need of the additional variable. The PIDE (3.1.5) at the point ( t;n; ) reads:
+0 =t+n 1
+22n2+ 2^q()+a
+b^m()
+1fn<Nge bc + 1fn> Nge bc+
+; (5.0.1)
+with terminal condition (T;n; ) = cn2and partial information optimal spreads given by
+c(t;n; ) =1
+b 2w()
+^m()(t;n; )  
+(t;n1;=^m()) (t;n; )
+;where: (5.0.2)
+(i) ^q() =q11+q21(1 ) is the observable transition rate to the bad regime.
+(ii) ^m() =+ (1 )mis the observable intensity increase from the bad regime (as a ratio).
+(iii)w() = (m 1)(1 ) is the observable variance, of the square root, of the percentage
+intensity increase from the bad regime; i.e., a measure of observable order ow volatility.
+The previous equations are valid for 0, or more precisely, for ;such that
+cholds true over the whole domain. Otherwise, one needs to oor and cap the
+optimal spreads and change the Hamiltonians accordingly, as done in Proposition 4.5.2.
+A nite dierences scheme of simple implementation to solve (5.0.1) consists of reversing time
+and using an explicit upwind Euler scheme over a uniform grid for ( t;) andn= N; N+
+1;:::;N. The terms of the form (t;n1;=^m()), where=^m() will typically fall outside
+of the grid, can be approximated by linear interpolation as in [DF14]. The limiting equations
+can be used for !0+and!1 provided that q11>0, which we assume henceforth.
+Such a scheme can be shown to be consistent, stable and monotone under an appropriate CFL
+condition. In light of equation (3.1.5) satisfying a comparison principle (see [CEFS16a, Thm.5.3]
+and why it holds for our model in the proof of Theorem 3.1.4), we know the scheme converges
+to the unique continuous viscosity solution [BS91], and we can recover the expected penalized
+P&L of the MM (Theorems 3.1.1 and 3.1.4). The optimal strategy to be followed by the MM
+is then given in feedback form by c (t;Nt ;t );c+(t;Nt ;t )
+.15
+15As previously mentioned, these are technically only candidates for optimal (or -optimal) strategies. We do
+not rigorously prove their optimality character here, but merely note that well known results of discrete time
+dynamic programming, together with the convergence of the discrete solutions of (5.0.1) to the analytical one,
+suggest that they can be safely used as such.
+25
+
+We will focus our attention on the optimal ask spread, with analogous observations holding
+for the bid spread. The parameter values in Table 1 were used for all the experiments presented
+in this section. For those present in the classical one regime models, we have chosen values used
+in previous works (in the = 0 case [CJ15]) to make the comparison clearer. In particular,
+the value of cwill be taken as either 0 or 0 :01, to be further specied in each experiment. The
+time horizon will always be the one displayed on the corresponding axis. Note that we work in
+a symmetric market, which justies analyzing one side only.
+Parameter abNm q11=q21 =
+Value 00.1 0.1 225 3 5 5 10
+Table 1: Standing parameter values for numerical tests presented.
+5.1 Comparing full and partial information optimal strategies
+Under the standing assumptions of this section, the full information equation (4.1.3), for a
+function ~, becomes:
+0 =~t+n 1
+22n2+ ~qi
+~(t;n;1) ~(t;n;2)
++a
+b~mi
+1fn<Nge bf + 1fn> Nge bf+
+;
+(5.1.1)
+with terminal condition ~(T;n;i ) = cn2and full information optimal spreads given by
+f(t;n;i ) =1
+b  ~(t;n1;i) ~(t;n;i )
+;where: (5.1.2)
+(i) ~qi=q111f1g(i) +q211f2g(i) is the eective transition rate to the bad regime.
+(ii) ~mi= 1f1g(i)+ 1f2g(i)mis the eective intensity increase from the bad regime (as a ratio).
+The previous equations are valid for 0, as in the partial information case.
+Although similar, equation (5.1.1) for the bad regime i= 1 (resp. good regime i= 2) is not
+the limiting equation of (5.0.1) for !1 (resp.!0+). Indeed, a MM with full information
+can expect to make a larger prot. Thus, in general, ~ >  even in these extreme cases.16
+However, the corresponding optimal strategies do (at least approximately) agree, as Figures 1
+and 2 show.
+Figure 1 shows the optimal ask spread under partial information as a function of time, for
+dierent inventory levels (solid lines). It also displays how it changes for dierent lter values
+(= 0;0:6 and 1 from left to right) and how it compares to the optimal ask spread under
+full information (dashed lines) in the good regime (left) and bad regime (right). The inventory
+levels increase from top to bottom in all cases, and the terminal execution cost is neglected
+(c= 0). We have chosen to display = 0:6 due to the eect of the lter being more pronounced
+around this value; it results in an optimal spread which is, for tT, between 6% and 30%
+higher (depending on the inventory level) than the corresponding ones under full information
+(a sizeable dierence in practice). We will come back to this in Section 5.2. All other values
+show similar intermediate behaviours. Recall that when the inventory reaches the minimum
+n= N= 3, the MM will not sell any more (either abstaining from quoting or giving a
+\stub" quote) until her inventory increases again, which is why there is no spread plotted for this
+position. We see that some of the features already present in one regime models are preserved
+for two regimes, both under full and partial information; namely:
+16Our numerical ndings were indeed consistent with this intuitive statement.
+26
+
+Figure 1: Optimal ask spread as a function of time, under full and partial information (dashed
+and solid lines resp.), and for dierent inventory and lter values. Inventory levels increase from
+top to bottom in all cases. Terminal execution cost is neglected ( c= 0).
+FortTthe spread does not depend on time (approximately) and its asymptotic value
+becomes higher as the inventory decreases to the lower constraint n= N. Indeed, for
+at or short positions, any additional ask order will increase inventory risk, moving it
+closer to the minimum allowed and raising the accumulated inventory penalty. The MM
+manages this risk by increasing the spread, thus demanding a higher instantaneous prot
+and reducing the probability of getting executed. Similarly for long positions, the higher
+the exposure the lower the spread, as the MM seeks to unwind her inventory.
+In the case of negligible terminal cost, the spread converges to a terminal value independent
+of the inventory. This is the optimal spread of a fully risk-neutral MM with negligible costs
+(Corollary 4.5.3), who only maximizes \expected instantaneous margin". (This value is
+given byc+(T;;) = 1=b, the reciprocal percentage sensitivity of the liquidity to spread
+changes; cf. Proposition 4.5.2). The reason being that as the time horizon approaches, it
+becomes less and less likely for the MM to get executed again. The penalty accumulated
+betweentandTvanishes, and the risk of reaching the inventory constraints diminishes.
+The MM therefore takes a bit more risk and makes a last attempt at increasing her
+expected P&L, either by increasing execution probability (for null or short positions) or
+increasing her instantaneous prot if executed (for long positions).
+Nevertheless, the following dierences can be observed:
+Under full information (and for symmetric markets), the spreads are always symmetric in
+the inventory with respect the risk-neutral value, i.e., 1 =b f+(;n;) =f+(;1 n;) 1=b,
+for 0<nN. However, under partial information this symmetry is broken, as the MM
+27
+
+increases her spreads. This holds in fact for any 0 <  < 1 and it is suggested by the
+comparison of equations (5.0.2) and (5.1.2), since <0 (an increasing probability of
+being in the bad regime lowers the expected P&L; see argument of [BL09, Lemma 3.3]).
+As a result, the full information spreads are downward biased when the exact regime is
+unknown. Loosely speaking, this bias is approximately proportional to the product of
+(sensitivity of the expected P&L to observable regime changes) and w() (observable
+order ow volatility), and inversely proportional to the observable intensity increase ^ m().
+Intuitively, a partially informed MM faces not only the risk of the market regime shifting
+but also uncertainty on the current state, and must increase her spreads accordingly. This
+is done by considering the cost of any observable changes on the P&L and the uctuations
+in the order ow, and discounting by liquidity increases.
+The good and bad regimes dier in the rate of order ow at the reference price (i.e.,
+the amplitude parameters aandamof the orders intensities). Consequently, one could
+erroneously think that the partial information strategy should essentially be a one regime
+strategy for some intermediate parameter, such as a^m(). However, in the full information
+framework, an increase in the liquidity taken by clients results in the asymptotic spreads
+(i.e., fortT) moving closer to the risk-neutral value (see [CJ15, GLFT13]). On the
+other hand, this is not true any more in the partial information case, due to the regime
+risk adjustment previously mentioned that shifts the spreads.
+Lastly, we remark that there is a distinguished change in behaviour close to expiry, with the
+spreads overshooting above the risk-neutral value for some inventories, before approaching
+it again. Intuitively, the overshooting is due to the added regime risk adjustment, and
+the convergence is due to the vanishing of additional inventory risks. (Recall that the
+MM's main concern becomes her terminal hedging cost, should there be one, and this
+does not depend on the market regime.) A somewhat similar eect can be found under
+full information in asymmetric markets [CJ15].
+Figure 2 serves the same comparison as Figure 1, but including in this case a terminal
+execution cost. The observations remain mostly the same, except for a change in the terminal
+behaviour of the spreads, just as in the classical one regime case. Here, the spreads diverge
+from the risk-neutral no-costs value instead of approaching it, as the MM makes a last instant
+attempt to reduce her hedging cost. We remark that in both examples, a higher penalty 
+increases the dierence between the full information optimal spreads of the two regimes, but it
+does not qualitatively change the observations made.
+Figure 3 shows the partial information optimal ask spread as a function of time and lter,
+for three dierent inventory positions: extreme short (left), at (center) and extreme long
+(right), and no terminal penalty. We can see that the spread is concave on the lter, and the
+maximum concavity is reached for a null inventory and 0:6, gradually decreasing as the
+position becomes short or long. We had observed already in equation (5.0.2) that the partially
+informed MM increases her spreads to manage higher regime risk, and that this correction
+is approximately proportional to the expected P&L sensitivity, , times the observed order
+ow volatility w() = (m 1)(1 ). Heuristically, it seems reasonable that the change in
+spread should resemble the concavity of w() for a risk averse MM, and that the cost of regime
+uncertainty is the highest for a at position (since deviations from it increase in turn price
+exposure). The question of why the maximum variation is reached around 0:6 is once again
+diered to Section 5.2.
+28
+
+Figure 2: Optimal ask spread as a function of time, under full and partial information (dashed
+and solid lines resp.), and for dierent inventory and lter values. Inventory levels increase from
+top to bottom in all cases. Terminal execution cost: `(n) = cn2, withc= 0:01.
+Figure 3: Optimal partial information ask spread as a function of time and lter (observable
+probability of bad regime), for dierent inventory levels. Terminal execution cost is neglected
+(c= 0).
+29
+
+5.2 Sample paths and a closer look at the lter
+There are dierent ways to simulate point processes with stochastic intensity. A classical ap-
+proach of simple implementation is the so-called thinning method [Oga81]. This method is
+particularly well suited to our framework, as it can be combined with the ltering theory
+developed in Section 2 by making use of the observable intensity of N(see Theorem 3.1.1
+and [GKM11, Alg.3.2]). The interested reader is referred to [LTT18] for optimizations in terms
+of the thinning bound.
+Figure 4 shows four sample paths resulting from an optimal behaviour of the MM with
+incomplete information. They were obtained by jointly simulating the inventory N(middle)
+starting from n0= 0, the lter  = ;1(bottom) starting from 0= 0:5, and the optimal
+strategy= c (t;Nt ;t );c+(t;Nt ;t )
+(top), forc= 0.
+Figure 4: Sample paths of optimal partial information bid/ask spreads (rst), inventory (second)
+and lter (third), with c= 0,n0= 0 and0= 0:5.
+We want to analyze the behaviour of . Let us recall that  trepresents the probability of
+being in the bad regime (a slow market with low liquidity) given the information observed by
+the MM at time t. The MM makes her assessment based on the orders (both buy and sell) that
+she received so far, which is the same as looking at the evolution of her inventory. If we take a
+close look at what happens between any two consecutive orders, we see that there is a pattern
+that repeats itself. As time passes without the MM receiving any order, she deems more likely
+that the market is in the bad regime, and so  tincreases. If enough time goes by in this way,
+then tgets asymptotically closer to some preponderant \equilibrium" value which is around
+0.6. (Recall that this is the same value we have encountered before as having the greatest eect
+on the spreads.) But as soon as an order arrives, the MM revisits her probabilities, as being
+in the good regime of high liquidity seems a lot more likely. This is why we see that  tjumps
+downwards with each trade (i.e., at the jump times of the inventory).
+So what makes 0:6 so special? If we look at the SDE (2.1.1) governing the lter
+dynamics, it now reads:
+30
+
+dt=
+^q(t) +w(t)a 
+1 
+te bc 
+t+ 1+
+te bc+
+t
+dt+ t  
+1
+^m 
+t  1!
+dN 
+t+dN+
+t
+:
+(5.2.1)
+In between jumps, each path of  tevolves according to an ODE. If enough time passes by
+without another order arriving, we can consider the asymptotic behaviour for t!T. Forc= 0,
+this leads todt
+dt^q(t) +w(t)a
+e;with= 1 or= 2;
+depending on the current inventory level. The right-hand side of this ODE is a concave parabola
+in twith a negative root and another one, , between 0 and 1. For the parameter values in
+Table 1, it is either 0:572 for= 1, or0:636 for= 2. Therefore, is an attractor
+(i.e., a stable equilibrium) for the lter, which explains the tendency of  ttowards 0.6 and the
+central role of this value. Indeed, as the lter approaches one of its attractors, the MM exhausts
+all the information she has and can make no further assessment on the state of the market until
+she is hit by another order. In a sense, this is when she faces the most uncertainty, and she
+increases her spreads accordingly to manage regime risk.
+A Additional proofs
+Proof of Proposition 1.4.1 .N ;N+are nite variation (FV) processes with no common
+jumps, hence [ N ;N+] = 0Q-a.s. Therefore, the multiplicativity of the stochastic exponential
+[JS02, p.138] and the exponential formula for FV processes [Br e81, p.337 T4] yield the explicit
+expressionZ=Z; Z;+, with
+Z;
+t= exp Zt
+0 
+1 
+Yu (+
+u)
+1
+udu!Y
+ut:
+N
+u6=0
+Yu (+
+u): (A.1.1)
+Then (i)follows from the strict positivity and boundedness of 
+i() for 1ik, as
+in [Br e81, p.168 T4] with terminal time T. The only dierence is that in our case the Q-
+intensity of Nis 1fNt <Ng1 instead of 1. The proof remains the same though, simply
+recalling that the Q-moment generating function of N
+Tis dominated by the one of a standard
+Poisson random variable (see (1.2.5)). Uniform integrability is immediate.
+(i)guarantees that P, as dened in (ii), is an equivalent probability measure. The shape
+of theP-intensities of N ;N+is due to [Br e81, p.166 T3].
+The fact that Wis still a Wiener process under Pis a consequence of the Girsanov{Meyer
+Theorem [Pro04, p.132 Thm.35] and Levy's characterization Theorem.
+As forY, note rst that its initial distribution does not change as Z
+0= 1, and the same
+goes for its innitesimal generator operator. To see this, consider the Q-generator operator AY
+t:
+RE!RE,AY
+tf(i) =Pk
+j=1qij
+tf(j). We know the process Mt=f(Yt) f(Y0) Rt
+0AY
+uf(Yu)du
+is aQ-local martingale. Once again, by the Girsanov{Meyer Theorem., Mis also a P-local
+martingale ([ M;Z ] = 0 since Y;N ;N+are FV processes satisfying (1.2.2)). Moreover, being
+bounded,Mis a true P-martingale and Ysolves, for ( F;P), a well-posed martingale problem
+for (AY
+t;0). This implies Yis aP-Markov chain with a uniquely determined law [EK09, p.184
+Thm.4.2].17ThatQis also the P-generator matrix follows from uniqueness.
+(1.2.2) clearly remains unchanged under an equivalent change of probability measure.
+17Although our martingale problem is non-homogeneous in time, ( Qt) is deterministic, so this does not represent
+a problem.
+31
+
+Proof of Proposition 1.4.2 . (i) and (ii)are proved just as in Proposition 1.4.1 (the pro-
+cesses 1=
+i() are strictly positive and bounded for 1 ik). The Q-independence
+ofY;N;W is a consequence of [JYC09, p.543 Lem.9.5.4.1]. That is, the ( Q;F)-martingales
+Y R
+0Pk
+j=1qYu ;j
+ujdu; N R
+0( 1 
+u  1+
+u)duandWhave the predictable representation prop-
+erty with respect to FY;FNandFWresp. (see [Br e81, p.239 T8] for compensated counting
+measures) and they are ( F;Q)-orthogonal, which implies their independence.
+The explicit expressions for the stochastic exponentials (see (A.1.1)) show straightforwardly
+thatZZ= 1, proving (iii).(iv)is due to [Br e81, p.64 T8].
+Proof of Proposition 2.1.1 .We prove it just for N+, the others being analogous, and we
+omitfor simplicity. It is clear that c+is predictable. We need to check that for any FW;N-
+predictable process  0,
+E"ZT
+0 tc+
+tdt#
+=E"ZT
+0 tdN+
+t#
+:
+For any 1ik, each path of the c adl ag processes iand 1fY=ighas only countably many
+jumps. We can therefore interchange these processes and their left limits when integrating with
+respect todt. By properties of the conditional expectation and Fubini's Theorem,
+E"ZT
+0 tc+
+tdt#
+=E2
+4ZT
+0 t 1+
+tkX
+i=1i
+t +
+i(+
+t)dt3
+5=E2
+4ZT
+0 t 1+
+tkX
+i=1i
+t+
+i(+
+t)dt3
+5
+=E2
+4ZT
+0 t 1+
+tkX
+i=1E
+1fYt=igFN;W
+t
++
+i(+
+t)dt3
+5=ZT
+0E2
+4Eh
+ t 1+
+tkX
+i=11fYt=ig+
+i(+
+t)FN;W
+ti3
+5dt
+=ZT
+0Eh
+ t 1+
+tkX
+i=11fYt=ig+
+i(+
+t)i
+dt=E2
+4ZT
+0 t 1+
+tkX
+i=11fYt =ig+
+i(+
+t)dt3
+5=E"ZT
+0 t+
+tdt#
+=E"ZT
+0 tdN+
+t#
+:
+Proof of Proposition 2.1.2 .Let us check that solves (2.1.1). Clearly, the constraint and
+the initial condition are satised. The verication of the SDEs is due to [CEFS16a, Prop.3.3]
+(with more details in [CEFS16b, App.A, Lemma A.2 and Prop.3.3]), albeit some considerations
+need to be made.
+On the one hand, the authors work with a pure jump model, with strategies adapted to
+the natural ltration of the driving jump process only (i.e., there is no diusion) and constant
+generator matrix for the Markov chain. However, mutatis mutandis the former dierences yield
+no major change in the proofs.
+On the other hand, the main assumption of the authors, [CEFS16a, Asm.2.1], postulates
+the existence of some deterministic measure ~ N(dz) onRwith compact support18such that for
+alli2E; +; 2(;); n2[ N;N]\Z, the measure N(i;+; ;n;dz ) is equivalent to
+~N(dz) and the Radon-Nikodym derivative dN(i;+; ;n;)=d~Nis uniformly bounded and
+bounded away from zero ~ N(dz)-a.s.
+18In [CEFS16a] the support is assumed to be a subset of (  1;1), but this is only for a \return (or yield)
+process" as in their case.
+32
+
+Since the spread processes are xed and bounded, we can assume without loss of generality
+thatis nite. Setting ~ N(dz):=m1(dz) +m 1(dz) we see straightforwardly that the two
+measures are equivalent with derivative
+dN(i; ;+;n;)
+d~N(z) =  
+i( ) 1fn<Ng 1fz=1g+ +
+i(+) 1f n<Ng 1fz= 1g; (A.1.2)
+uniformly bounded by  
+i() + +
+i(). However, our model allows for dN=d~N(z) = 0,
+which is a consequence of having vanishing intensities . This poses no issue nonetheless, as
+dN=d~N(z)>0 is only used in [CEFS16a, Prop.3.3] to guarantee Z>0 (see Proposition
+1.4.2). This condition, also satised in our model,19allows to go from the physical probability
+Pto a reference probability Qand backwards.
+We turn now to the proof of uniqueness. We remark rst that the jump height coecients
+in (2.1.1) will typically not be Lipschitz (classical results for SDEs such as [Pro04, p.253 Thm.7]
+cannot be applied) and the paths of the spreads need not be continuous between the jump times
+ofN(ruling out the most classical results of ODEs [CL55]). Nevertheless, we can still follow a
+pathwise ODEs approach.
+Let us x a path and verify uniqueness inductively on the intervals [ m;m+1), where0:= 0
+and 0<1<2<<M=Tare the jump times of N(including the terminal time Teven
+if there is no jump at that point). Set Aji
+t= 1 
+t( 
+j  
+i)( 
+t) + 1+
+t(+
+j +
+i)(+
+t). ThenAji
+is bounded for all 1 i;jk. Now observe that any c adl ag process ~, solving the constrained
+system of SDEs (2.1.1), must solve pathwise for m= 0;1;:::;M 1 the following system of
+ODEs in integral form, for t2[m;m+1):
+~i
+t=Ri
+m ~ 
+m
++Zt
+mkX
+j=1
+qji
+u~j
+u+~i
+u~j
+uAji
+u
+du; (A.1.3)
+withRi
+m ~ 
+m:=~i
+ 
+m
+i(
+m)=Pk
+j=1~j
+ 
+m
+j(
+m) if Nm=1; m> 0, andRi
+0 ~ 
+0
+=i
+0.
+Using that ~2 is bounded, and elementary algebra of bounded Lipschitz functions, it follows
+thatfi:[m;m+1)!R, dened by fi(u;) =Pk
+j=1(qji
+uj+ijAji
+u) is Lipschitz in ,
+uniformly in u. LetKbe the maximum Lipschitz constant of flfor 1lkand suppose
+
+ 
+m=~ 
+m(clearly satised for m= 0). Then (A.1.3) yields k
+t ~tkKRt
+mk
+u ~ukdu,
+implying 
+t=~ton [m;m+1) by Gr onwall's inequality. As a consequence, the equality on
+[0;T) follows by induction. It must clearly hold at time Tas well, either by continuity or (if
+there is a jump) because 
+T=RM 
+
+ 
+M
+=RM ~ 
+M
+=~T.
+Proof of Proposition 2.1.4 .We want to show that ;i
+t>0 for all 1ik;0tT
+a.s. We proceed by induction on the jump times of N, for each path, as at the end of the proof
+of Proposition 2.1.2. Using the same notations, let 1 ikand suppose ;j
+ 
+m>0 for all
+1jk(satised for m= 0 by assumption). Then (A.1.3), Assumptions 1.2.1 and the fact
+thatAii0 by denition, show that ;iis absolutely continuous on the interval [ m;m+1)
+and satises
+(;i
+t)0=kX
+j=1
+qji
+t;j
+t+ ;i
+t;j
+tAji
+t
+= ;i
+t
+qii
+t+X
+j6=i;j
+tAji
+t
++X
+j6=iqji
+t;j
+t
+;i
+t
+qii
+t+X
+j6=i;j
+tAji
+t
+;(A.1.4)
+19This was ultimately a consequence of the decomposition in Assumptions 1.2.2 (i), that allowed for the
+vanishing factors of the intensities to be secluded as the reference probability intensities.
+33
+
+fordt-a.e.t2[m;m+1), subject to ;i
+m=Ri
+m(
+ 
+m)>0. Let us set s:= sup([m;m+1)\ft2
+[0;T]:;i
+t>0g). We need to prove that s=m+1. By the continuity of ;i, it must be
+s>m. Consequently, (A.1.4) and the absolute continuity of log ;ion [m;t][m;s) yield
+;i
+tRi
+m(
+ 
+m) expZt
+m 
+qii
+u+X
+j6=i;j
+uAji
+u
+du
+fordt-a.e.t2[m;s):
+If it weres < m+1, the continuity of ;iagain and the former inequality would imply 0 =
+;i
+s>0, proving by contradiction that s=m+1and ;iis positive on the whole interval
+[m;m+1). Positivity on [0 ;T) now follows by induction, and it must clearly hold at time Tas
+well, as either there is a jump or we can reason as we just did.
+Proof of Theorem 3.1.4 . CaseN<+1and >0: Let us write 	 =1+
+, with
+(t;n; ) = sup
+2~A2
+t~E;t;n;
+exp
+  ~P;n;
+t;T+`(Nt;n
+T)
+ exp 
+`(Nt;n
+T)
+:
+Then  can be regarded as the value function of an optimization problem in the standard
+Bolza-Lagrange formulation, i.e.,
+(a) = sup
+2~A2
+t~E;a"ZT
+tD;a
+t;uf(u;A;a
+u;u)du+D;a
+t;Tg(A;a
+T)#
+;
+where the state variable A;a
+u= (u;Nt;n
+u;;t;n;
+u ) is a PDMP with bounded state space [0 ;T]
+(Z\[ N;N])and initial condition a= (t;n; ),D;a
+t;u= exp
+ Rv
+t(u;A;a
+u;u)du
+is
+the discount factor and f;g; are bounded functions. (These functions are bounded thanks to
+the control space being bounded.) The continuity of  can be proved now in the same way as in
+[CEFS16a, Thm.4.10] albeit in a more straightforward manner. This is due to the boundedness
+off;g; , the fact that ;t;n;never visits the relative border of the simplex , and that there is
+no exit time of the state space other than the terminal time. Assumptions [CEFS16a, Asm.4.7]
+are clearly veried in our model, and [CEFS16a, Asm.2.1] has already been accounted for at the
+beginning of the proof of Proposition 2.1.2.20We remark that in our case the bounding function
+(see [CEFS16a, Lem.4.6]) can be taken simply as b(t;n; ) = exp((T t)), for an >0 large
+enough to prove contractiveness.
+Having proved the continuity, the same proof of [CEFS16a, Thm.5.3] (or [DF99, Thm.7.5])
+shows that  is the unique continuous viscosity solution of its standard HJB equation. We
+remark once again that our case is simpler, in that  is bounded and we do not have any
+boundary conditions other than the terminal time condition. In particular, there is no need for
+additional assumptions on the growth of .
+Finally, the result for  is obtained via the two increasing dieomorphic transformations
+	 =1+
+and  =U 1
+	.
+CaseN<+1and= 0: The only dierence with the previous case is that the Bolza-
+Lagrange representation of the problem is obtained directly, since
+(t;n; ) = sup
+2~A2
+tE;t;n;"ZT
+t
+ 
+uc u;t;n;
+++
+uc+u;t;n;
++Nt;n
+u 1
+22(Nt;n
+u)2	
+du `(Nt;n
+T)#
+;
+with no need for any transformation.
+CaseN= +1and== 0`: The same as the latter case but working instead with
+the state variable ( u;;t;n;) and the value function .
+20An additional detail now is that [CEFS16a, Asm.2.1] is also used in [CEFS16a, Lem.4.1], which states that
+the drift coecient in equation (2.1.1) is Lipschitz in the state variable, uniform in time and control. This is
+routinely veried in our case, under our new assumption:  1<<<1.
+34
+
+Proof of Proposition 4.2.1 .Suppose rst I= [;T] for some 0 <T and let">0. Since
+N<1, there exists ( t";n";i")2[;T]Isuch that
+(t";n";i") (t";n";i") +"(T t") = min
+(t;n;i)2[;T]I(t;n;i ) (t;n;i ) +"(T t):(A.1.5)
+Ift"<T, then we must have
+t(t";n";i") t(t";n";i")":
+Let us see that the left-hand side is non-positive. By (4.2.1) and (4.2.2),
+t(t";n";i") t(t";n";i")X
+j6=i"qi"j
+t
+U 
+(t";n";j) (t";n";i")
+ U 
+(t";n";j) (t";n";i")
++ 1fn<Ng
+H 
+i 
+(t";n"+ 1;i") (t";n";i")
+ H 
+i 
+(t";n"+ 1;i") (t";n";i")
++ 1f n<Ng
+H+
+i 
+(t";n" 1;i") (t";n";i")
+ H+
+i 
+(t";n" 1;i") (t";n";i")
+:
+H
+iincreasing (resp. Uincreasing) and (A.1.5) imply that the last two terms (resp. the rst
+one) are non-positive. We must have then that t"=T, and due to (A.1.5) and (4.2.3) for all
+(t;n;i )2[0;T]I:
+(t;n;i ) (t;n;i ) +"(T t)(T;n";i") (T;n";i") +"(T T)0
+(t;n;i )(t;n;i ) "(T t):
+Since">0 was arbitrary, we obtain the desired result.
+The caseI= (;T] is now a consequence of comparing andon intervals of the form
+[tn;T](;T] withtn&.
+References
+[AB06] C.D. Aliprantis and K.C. Border, Innite dimensional analysis: a hitchhiker's guide ,
+3rd ed., Springer, 2006.
+[AS08] M. Avellaneda and S. Stoikov, High-frequency trading in a limit order book , Quan-
+titative Finance 8(2008), no. 3, 217{224.
+[BL09] E. Bayraktar and M. Ludkovski, Optimal trade execution in illiquid markets , arXiv
+preprint arXiv:0902.2516v1 (2009).
+[BL14] ,Liquidation in limit order books with controlled intensity , Mathematical
+Finance 24(2014), no. 4, 627{650.
+[Bou07] B. Bouchard, Introduction to stochastic control of mixed diusion processes, vis-
+cosity solutions and applications in nance and insurance , Lecture Notes Preprint
+(2007).
+[BR09] N. B auerle and U. Rieder, MDP algorithms for portfolio optimization problems in
+pure jump markets , Finance and Stochastics 13(2009), no. 4, 591{611.
+[BR10] ,Optimal control of piecewise deterministic Markov processes with nite time
+horizon , Modern trends in controlled stochastic processes: theory and applications
+123(2010), 143.
+[BR11] ,Markov decision processes with applications to nance , Springer Science &
+Business Media, 2011.
+35
+
+[Br e81] P. Br emaud, Point processes and queues: martingale dynamics , vol. 50, Springer,
+1981.
+[BS91] G. Barles and P.E. Souganidis, Convergence of approximation schemes for fully
+nonlinear second order equations , Asymptotic analysis 4(1991), no. 3, 271{283.
+[CDJ17] A. Cartea, R. Donnelly, and S. Jaimungal, Algorithmic trading with model uncer-
+tainty , SIAM Journal on Financial Mathematics 8(2017), no. 1, 635{671.
+[CEFS16a] K. Colaneri, Z. Eksi, R. Frey, and M. Sz olgyenyi, Optimal liquidation under partial
+information with price impact , arXiv preprint arXiv:1606.05079v5 (2016).
+[CEFS16b] ,Shall i sell or shall i wait? Optimal liquidation under partial information
+with price impact , arXiv preprint arXiv:1606.05079v3 (2016).
+[CJ13] A. Cartea and S. Jaimungal, Modelling asset prices for algorithmic and high-
+frequency trading , Applied Mathematical Finance 20(2013), no. 6, 512{547.
+[CJ15] ,Risk metrics and ne tuning of high-frequency trading strategies , Mathe-
+matical Finance 25(2015), no. 3, 576{611.
+[CJ19] Philippe Casgrain and Sebastian Jaimungal, Trading algorithms with learning in
+latent alpha models , Mathematical Finance 29(2019), no. 3, 735{772.
+[CJP15] A. Cartea, S. Jaimungal, and J. Penalva, Algorithmic and high-frequency trading ,
+Cambridge University Press, 2015.
+[CJR14] A. Cartea, S. Jaimungal, and J. Ricci, Buy low, sell high: A high frequency trading
+perspective , SIAM Journal on Financial Mathematics 5(2014), no. 1, 415{444.
+[CL55] E.A. Coddington and N. Levinson, Theory of ordinary dierential equations , Tata
+McGraw-Hill Education, 1955.
+[Dav84] M.H.A. Davis, Piecewise-deterministic Markov processes: A general class of non-
+diusion stochastic models , Journal of the Royal Statistical Society. Series B
+(Methodological) (1984), 353{388.
+[Dav93] ,Markov models and optimization , Chapman and Hall/CRC, 1993.
+[DF99] M.H.A. Davis and M. Farid, Piecewise-deterministic processes and viscosity solu-
+tions , Stochastic analysis, control, optimization and applications, Springer, 1999,
+pp. 249{268.
+[DF14] D.-M. Dang and P.A. Forsyth, Continuous time mean-variance optimal portfolio
+allocation under jump diusion: An numerical impulse control approach , Numerical
+Methods for Partial Dierential Equations 30(2014), no. 2, 664{698.
+[DRR13] S. Delattre, C.Y. Robert, and M. Rosenbaum, Estimating the ecient price from
+the order ow: a brownian cox process approach , Stochastic Processes and their
+Applications 123(2013), no. 7, 2603{2619.
+[EK09] S.N. Ethier and T.G. Kurtz, Markov processes: characterization and convergence ,
+vol. 282, John Wiley & Sons, 2009.
+[FL12] P. Fodra and M. Labadie, High-frequency market-making with inventory constraints
+and directional bets , arXiv preprint arXiv:1206.4810 (2012).
+36
+
+[FL13] ,High-frequency market-making for multi-dimensional Markov processes ,
+arXiv preprint arXiv:1303.7177 (2013).
+[FS06] W.H. Fleming and H.M. Soner, Controlled Markov processes and viscosity solutions ,
+2nd ed., vol. 25, Springer Science & Business Media, 2006.
+[GKM11] K. Giesecke, H. Kakavand, and M. Mousavi, Exact simulation of point processes
+with stochastic intensities , Operations Research 59(2011), no. 5, 1233{1245.
+[GL15] O. Gu eant and C.-A. Lehalle, General intensity shapes in optimal liquidation , Math-
+ematical Finance 25(2015), no. 3, 457{495.
+[GLFT12] O. Gu eant, C.-A. Lehalle, and J. Fernandez-Tapia, Optimal portfolio liquidation
+with limit orders , SIAM Journal on Financial Mathematics 3(2012), no. 1, 740{
+764.
+[GLFT13] ,Dealing with the inventory risk: a solution to the market making problem ,
+Mathematics and Financial Economics 7(2013), no. 4, 477{507.
+[Gu e17] O. Gu eant, Optimal market making , Applied Mathematical Finance 24(2017),
+no. 2, 112{154.
+[HS81] T. Ho and H.R. Stoll, Optimal dealer pricing under transactions and return uncer-
+tainty , Journal of Financial Economics 9(1981), no. 1, 47{73.
+[JP82] J. Jacod and P. Protter, Quelques remarques sur un nouveau type d' equations
+di erentielles stochastiques , S eminaire de Probabilit es XVI 1980/81, Springer, 1982,
+pp. 447{458.
+[JS02] J. Jacod and A. Shiryaev, Limit theorems for stochastic processes , 2nd ed., vol. 288,
+Springer Science & Business Media, 2002.
+[JYC09] M. Jeanblanc, M. Yor, and M. Chesney, Mathematical methods for nancial markets ,
+Springer Science & Business Media, 2009.
+[LTT18] V. Lemaire, M. Thieullen, and N. Thomas, Exact simulation of the jump times of a
+class of piecewise deterministic Markov processes , Journal of Scientic Computing
+75(2018), no. 3, 1776{1807.
+[Nik06] A. Nikeghbali, An essay on the general theory of stochastic processes , Probability
+Surveys 3(2006), 345{412.
+[Oga81] Y. Ogata, On Lewis' simulation method for point processes , IEEE Transactions on
+Information Theory 27(1981), no. 1, 23{31.
+[S09] B.K. ksendal and A. Sulem, Applied stochastic control of jump diusions , 3rd ed.,
+vol. 498, Springer, 2009.
+[Pro04] P.E. Protter, Stochastic integration and dierential equations , 2nd ed., Springer,
+2004.
+[Son88] H.M. Soner, Optimal control of jump-Markov processes and viscosity solutions ,
+Stochastic dierential systems, stochastic control theory and applications, Springer,
+1988, pp. 501{511.
+37
+

@@ -1,0 +1,7 @@
+product,feature,corr_fwd5
+ASH_COATED_OSMIUM,spectral_dev,-0.40037
+ASH_COATED_OSMIUM,spectral_slope,0.008524
+ASH_COATED_OSMIUM,spectral_ratio,-0.002427
+INTARIAN_PEPPER_ROOT,spectral_dev,-0.665159
+INTARIAN_PEPPER_ROOT,spectral_slope,-0.165548
+INTARIAN_PEPPER_ROOT,spectral_ratio,-0.003909
